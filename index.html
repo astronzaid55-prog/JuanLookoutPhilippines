@@ -8,9 +8,9 @@
   <style>
     :root {
       --bg-grad: radial-gradient(circle at 15% -10%, #bae6fd 0%, #e0f2fe 38%, #f8fafc 85%);
-      --surface: rgba(255, 255, 255, 0.78);
+      --surface: rgba(255, 255, 255, 0.80);
       --surface-strong: rgba(255, 255, 255, 0.96);
-      --surface-elev: rgba(241, 245, 249, 0.85);
+      --surface-elev: rgba(241, 245, 249, 0.88);
       --border: rgba(15, 23, 42, 0.11);
       --text: #0f172a;
       --muted: #475569;
@@ -31,9 +31,9 @@
 
     html[data-theme="night"] {
       --bg-grad: radial-gradient(circle at 18% -8%, #172554 0%, #090d16 58%, #04070e 100%);
-      --surface: rgba(15, 23, 42, 0.76);
+      --surface: rgba(15, 23, 42, 0.78);
       --surface-strong: rgba(15, 23, 42, 0.96);
-      --surface-elev: rgba(30, 41, 59, 0.72);
+      --surface-elev: rgba(30, 41, 59, 0.75);
       --border: rgba(148, 163, 184, 0.16);
       --text: #f8fafc;
       --muted: #94a3b8;
@@ -64,7 +64,6 @@
     .tabular { font-variant-numeric: tabular-nums; }
     .container { max-width: 1280px; margin: 0 auto; padding: 10px 12px; }
 
-    /* Sticky Header */
     .sticky-hdr {
       position: sticky; top: 0; z-index: 40;
       backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
@@ -98,7 +97,7 @@
       display: inline-flex; align-items: center; justify-content: center; gap: 5px;
       padding: 6px 10px; border-radius: 10px; border: 1px solid var(--border);
       background: var(--surface-elev); color: var(--text); font-size: 0.76rem; font-weight: 600;
-      cursor: pointer; transition: transform 0.12s ease, background 0.15s ease;
+      cursor: pointer; transition: transform 0.12s ease, background 0.15s ease; text-decoration: none;
     }
     .btn:active { transform: scale(0.97); }
     .btn-primary { background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff; border: none; }
@@ -111,7 +110,6 @@
     }
     .seg button.active { background: var(--accent); color: #fff; }
 
-    /* Cards & Bento Grid */
     .card {
       background: var(--surface); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
       border: 1px solid var(--border); border-radius: 18px; padding: 14px; box-shadow: var(--shadow);
@@ -122,7 +120,6 @@
     .card-lbl { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
     .muted { color: var(--muted); font-size: 0.78rem; }
 
-    /* 2-col mobile secondary grid -> multi-col desktop */
     .bento-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
     .bento-3 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
     @media (min-width: 860px) {
@@ -130,7 +127,6 @@
       .bento-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
     }
 
-    /* Hazard Alert Banner */
     .hazard-banner {
       border-radius: 18px; border: 1px solid var(--border); background: var(--surface);
       box-shadow: var(--shadow); margin-bottom: 12px; overflow: hidden;
@@ -157,12 +153,12 @@
       padding: 10px 12px; border-radius: 12px; background: var(--surface-elev);
       border: 1px solid var(--border); margin-top: 8px; cursor: pointer;
     }
+    .alert-item:hover { border-color: var(--accent); }
     .alert-detail-box {
       margin-top: 8px; padding: 10px 12px; border-radius: 12px;
       background: var(--surface-strong); border-left: 3px solid var(--accent); font-size: 0.8rem; line-height: 1.45;
     }
 
-    /* Hero Nowcast */
     .hero-stage { position: relative; overflow: hidden; margin-bottom: 12px; padding: 18px; }
     .sky-fx { position: absolute; inset: 0; pointer-events: none; opacity: 0.35; }
     .hero-grid { position: relative; z-index: 2; display: grid; grid-template-columns: 1fr; gap: 14px; }
@@ -170,7 +166,6 @@
     .hero-main { font-size: 3.1rem; font-weight: 900; letter-spacing: -0.04em; line-height: 1; color: var(--c-temp); }
     .hero-summary { font-size: 0.9rem; line-height: 1.45; margin-top: 8px; font-weight: 500; }
 
-    /* Hourly Strip */
     .hourly-strip {
       display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px;
       scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;
@@ -183,18 +178,15 @@
     .hr-bar-track { height: 28px; width: 8px; margin: 6px auto; border-radius: 999px; background: rgba(148, 163, 184, 0.2); overflow: hidden; display: flex; align-items: flex-end; }
     .hr-bar-fill { width: 100%; background: var(--c-rain); border-radius: 999px; }
 
-    /* Consensus bars */
     .spread-track { height: 10px; border-radius: 999px; background: rgba(148, 163, 184, 0.22); position: relative; margin: 10px 0 6px; }
     .spread-range { position: absolute; top: 0; bottom: 0; border-radius: 999px; background: linear-gradient(90deg, var(--c-rain), var(--c-temp)); }
     .spread-avg { position: absolute; top: -3px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; background: var(--text); border: 3px solid var(--accent); }
 
-    /* Tables */
     .scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
     table { width: 100%; border-collapse: collapse; font-size: 0.79rem; }
     th, td { padding: 8px 7px; border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap; }
     th { font-size: 0.69rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
 
-    /* Bottom Sheet & Modal */
     .sheet-backdrop {
       position: fixed; inset: 0; background: rgba(2, 6, 23, 0.62); backdrop-filter: blur(5px);
       display: none; align-items: flex-end; justify-content: center; z-index: 60;
@@ -202,7 +194,7 @@
     @media (min-width: 700px) { .sheet-backdrop { align-items: center; padding: 16px; } }
     .sheet-backdrop.open { display: flex; }
     .sheet-panel {
-      width: 100%; max-width: 620px; max-height: 88dvh; overflow-y: auto;
+      width: 100%; max-width: 640px; max-height: 88dvh; overflow-y: auto;
       background: var(--surface-strong); border: 1px solid var(--border);
       border-radius: 22px 22px 0 0; padding: 18px; box-shadow: var(--shadow);
     }
@@ -213,6 +205,7 @@
       width: 100%; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--border);
       background: var(--surface-elev); color: var(--text); font-size: 0.84rem;
     }
+    .grid-2-in { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
     .kv-row { display: flex; justify-content: space-between; gap: 10px; font-size: 0.8rem; padding: 5px 0; border-bottom: 1px dashed var(--border); }
     .kv-row span { color: var(--muted); }
   </style>
@@ -228,7 +221,7 @@
           <div class="hdr-sub tabular" id="hdrClock">15.8003°N, 121.0030°E • Syncing...</div>
         </div>
         <span class="hdr-temp tabular" id="hdrTemp">--.-°C</span>
-        <span class="badge b-ok" id="connModeBadge">LAN</span>
+        <span class="badge b-ok" id="connModeBadge">STA</span>
       </div>
       <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
         <button class="btn btn-ghost" onclick="toggleTheme()" title="Toggle Day/Midnight Theme" id="themeBtn">🌙</button>
@@ -236,7 +229,8 @@
           <button id="btnC" class="active" onclick="setUnit('C')">°C</button>
           <button id="btnF" onclick="setUnit('F')">°F</button>
         </div>
-        <button class="btn" onclick="refreshAll(true)">↻</button>
+        <button class="btn" onclick="refreshAll(true)" title="Refresh Now">↻</button>
+        <button class="btn" onclick="syncDeviceClock()" title="Sync RTC Clock">🕒</button>
         <button class="btn btn-primary" onclick="openConfigSheet()">⚙ Config</button>
       </div>
     </div>
@@ -244,16 +238,16 @@
 
   <main class="container">
 
-    <!-- 2. Real-Time Philippine Hazard Alert Banner (PAGASA, NDRRMC, PHIVOLCS) -->
-    <section class="hazard-banner sev-yellow" id="hazardBanner">
+    <!-- 2. Live Extracted Advisories (PAGASA, NDRRMC, PHIVOLCS, FB/X Feed + Sensor/Model Signals) -->
+    <section class="hazard-banner" id="hazardBanner">
       <div class="hazard-top" onclick="toggleHazardBanner()">
         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
           <span class="pulse-dot" id="hazardPulse"></span>
-          <strong style="font-size:0.88rem;" id="hazardHeadline">PAGASA / NDRRMC / PHIVOLCS Advisories</strong>
-          <span class="badge b-warn" id="baroCrossCheckBadge">Baro Cross-Check: Steady</span>
+          <strong style="font-size:0.88rem;" id="hazardHeadline">Live Agency &amp; Social Advisories</strong>
+          <span class="badge b-ok" id="baroCrossCheckBadge">Feed: --</span>
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="muted tabular" id="hazardTimestamps">Issued: -- • Synced: --</span>
+          <span class="muted tabular" id="hazardTimestamps">Last Checked: --</span>
           <button class="btn" type="button" id="hazardToggleBtn">Expand ▾</button>
         </div>
       </div>
@@ -264,12 +258,14 @@
             <button class="btn" onclick="setAgencyFilter('PAGASA', this)">PAGASA</button>
             <button class="btn" onclick="setAgencyFilter('NDRRMC', this)">NDRRMC</button>
             <button class="btn" onclick="setAgencyFilter('PHIVOLCS', this)">PHIVOLCS</button>
+            <button class="btn" onclick="setAgencyFilter('FB/X', this)">FB / X</button>
+            <button class="btn" onclick="setAgencyFilter('STATION', this)">Station Signal</button>
           </div>
-          <span class="muted" id="hazardCountLbl">3 active bulletins</span>
+          <span class="muted" id="hazardCountLbl">0 live bulletins</span>
         </div>
         <div id="hazardList"></div>
         <div class="alert-detail-box" id="hazardReader">
-          Tap any advisory above to inspect full bulletin details, affected Nueva Ecija / Central Luzon areas, and recommended local actions without leaving the dashboard.
+          Configure an Advisory Feed URL (JSON array or RSS/Atom bridge for PAGASA, NDRRMC, PHIVOLCS, Facebook, or X) in <strong>⚙ Config</strong> while in STA mode. No fabricated bulletins are shown.
         </div>
       </div>
     </section>
@@ -292,19 +288,19 @@
         <div>
           <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
             <span class="badge" id="syncedModelBadge" onclick="openModelBreakdown()" style="cursor:pointer;">
-              Synced Model: ECMWF IFS • 98.4% Sensor Match ▸
+              AI Next-Hr: --.-°C • 0 SGD Steps ▸
             </span>
-            <span class="badge-src src-sensor">SENSOR + MODEL</span>
+            <span class="badge-src src-sensor">BME280 + 14 MODELS</span>
           </div>
           <div style="display:flex; align-items:flex-end; gap:14px; flex-wrap:wrap;">
             <div class="hero-main tabular" id="heroTemp">--.-°C</div>
             <div>
-              <div style="font-size:0.95rem; font-weight:700;" id="heroCond">Partly Cloudy • Amihan Flow</div>
+              <div style="font-size:0.95rem; font-weight:700;" id="heroCond">Awaiting Telemetry</div>
               <div class="muted tabular" id="heroFeels">Feels Like --.-°C • Dew Point --.-°C</div>
             </div>
           </div>
           <p class="hero-summary" id="heroPlainSummary">
-            Warm, breezy conditions around San Jose City with comfortable morning/evening air and low near-term rain risk.
+            Waiting for live sensor and model telemetry.
           </p>
         </div>
 
@@ -318,23 +314,23 @@
               <svg width="56" height="56" viewBox="0 0 60 60">
                 <circle cx="30" cy="30" r="26" fill="none" stroke="var(--border)" stroke-width="2" />
                 <text x="30" y="11" text-anchor="middle" font-size="8" fill="var(--muted)">N</text>
-                <g id="windArrowGroup" transform="rotate(45 30 30)">
+                <g id="windArrowGroup" transform="rotate(0 30 30)">
                   <polygon points="30,10 35,34 30,29 25,34" fill="var(--c-wind)" />
                 </g>
               </svg>
               <div>
-                <div style="font-weight:800; font-size:0.95rem;" class="tabular" id="windMainTxt">14 km/h NE</div>
-                <div class="muted tabular" id="windGustTxt">Gusts 24 km/h</div>
+                <div style="font-weight:800; font-size:0.95rem;" class="tabular" id="windMainTxt">-- km/h</div>
+                <div class="muted tabular" id="windGustTxt">3h ΔP +0.0 hPa</div>
               </div>
             </div>
           </div>
 
           <div class="card" style="padding:10px;">
             <div class="card-hd" style="margin-bottom:4px;">
-              <span class="card-lbl">3h Barometer</span>
+              <span class="card-lbl">Sea-Level SLP</span>
               <span class="badge-src src-sensor">SENSOR</span>
             </div>
-            <div style="font-weight:800; font-size:0.95rem; color:var(--c-press);" class="tabular" id="slpHeroTxt">1013.2 hPa</div>
+            <div style="font-weight:800; font-size:0.95rem; color:var(--c-press);" class="tabular" id="slpHeroTxt">----.- hPa</div>
             <svg width="100%" height="30" viewBox="0 0 140 30" style="margin-top:4px;">
               <polyline id="heroBaroSpark" fill="none" stroke="var(--c-press)" stroke-width="2.2" points="0,16 45,15 95,14 140,13" />
             </svg>
@@ -345,21 +341,21 @@
               <span class="card-lbl">Rain &amp; Cloud</span>
               <span class="badge-src src-model">MODEL</span>
             </div>
-            <div style="font-weight:800; font-size:0.92rem; color:var(--c-rain);" class="tabular" id="rainHeroTxt">15% • 0.0 mm/h</div>
-            <div class="muted tabular" id="cloudHeroTxt">Cloud Cover 32%</div>
+            <div style="font-weight:800; font-size:0.92rem; color:var(--c-rain);" class="tabular" id="rainHeroTxt">0% • 0/0 ≥50%</div>
+            <div class="muted tabular" id="cloudHeroTxt">Cloud Base 600 m</div>
           </div>
 
           <div class="card" style="padding:10px;">
             <div class="card-hd" style="margin-bottom:4px;">
-              <span class="card-lbl">UV &amp; Visibility</span>
-              <span class="badge-src src-model">MODEL</span>
+              <span class="card-lbl">Wet-Bulb &amp; VPD</span>
+              <span class="badge-src src-sensor">SENSOR</span>
             </div>
-            <div style="font-weight:800; font-size:0.92rem; color:var(--c-astro);" class="tabular" id="uvHeroTxt">UV 4 (Mod)</div>
+            <div style="font-weight:800; font-size:0.92rem; color:var(--c-astro);" class="tabular" id="uvHeroTxt">WB --.-°C</div>
             <svg width="100%" height="18" viewBox="0 0 120 18">
               <path d="M10,16 A50,50 0 0,1 110,16" fill="none" stroke="rgba(148,163,184,0.25)" stroke-width="4" />
               <path id="uvArcFill" d="M10,16 A50,50 0 0,1 60,6" fill="none" stroke="var(--c-astro)" stroke-width="4" stroke-linecap="round" />
             </svg>
-            <div class="muted tabular" id="visHeroTxt">Vis 10.0 km • RH <span id="heroRhVal">--%</span> <span class="badge-src src-sensor">SENSOR</span></div>
+            <div class="muted tabular" id="visHeroTxt">VPD 0.00 kPa • RH <strong id="heroRhVal">--%</strong> <span class="badge-src src-sensor">SENSOR</span></div>
           </div>
         </div>
       </div>
@@ -368,7 +364,7 @@
     <!-- 4. Hourly Strip + 14-Agency Consensus + 7-Day Outlook -->
     <section class="card" style="margin-bottom:12px;">
       <div class="card-hd">
-        <span class="card-lbl">AccuWeather-Style Hourly Strip (Temp • Rain % • Wind)</span>
+        <span class="card-lbl">Hourly Strip (Temp • Rain % • Wind)</span>
         <span class="muted">Scroll horizontally →</span>
       </div>
       <div class="hourly-strip" id="hourlyStrip"></div>
@@ -377,8 +373,8 @@
     <div class="bento-2">
       <section class="card card-tap" onclick="openModelBreakdown()">
         <div class="card-hd">
-          <span class="card-lbl">14-Agency Consensus &amp; Spread</span>
-          <span class="badge b-ok" id="consensusPctBadge">92% Agreement</span>
+          <span class="card-lbl">14-Agency Consensus &amp; SGD Weights</span>
+          <span class="badge b-ok" id="consensusPctBadge">0 Models</span>
         </div>
         <div style="display:flex; justify-content:space-between; font-size:0.8rem;" class="tabular">
           <span>Min: <strong id="spreadMin">--.-°</strong></span>
@@ -386,10 +382,10 @@
           <span>Max: <strong id="spreadMax">--.-°</strong></span>
         </div>
         <div class="spread-track">
-          <div class="spread-range" id="spreadRange" style="left:20%; right:20%;"></div>
-          <div class="spread-avg" id="spreadAvgDot" style="left:52%;"></div>
+          <div class="spread-range" id="spreadRange" style="left:8%; right:8%;"></div>
+          <div class="spread-avg" id="spreadAvgDot" style="left:50%;"></div>
         </div>
-        <p class="muted">Tap to inspect all 14 global agencies (ECMWF, AIFS, GFS, GraphCast, ICON, JMA, GEM, Meteo-France, UKMO, BOM, CMA, Best Match, MET Norway).</p>
+        <p class="muted">Tap to inspect all 14 agencies with learned SGD weights &amp; MAE against your BME280.</p>
       </section>
 
       <section class="card">
@@ -410,41 +406,41 @@
     <div class="bento-3">
       <section class="card">
         <div class="card-hd">
-          <span class="card-lbl">Sun &amp; Moon Horizon Arc</span>
-          <span class="badge" id="moonPhaseBadge">🌕 Full / Gibbous</span>
+          <span class="card-lbl">Sun &amp; Extremes</span>
+          <span class="badge" id="moonPhaseBadge">24h Extremes</span>
         </div>
         <svg width="100%" height="78" viewBox="0 0 260 78">
           <line x1="12" y1="64" x2="248" y2="64" stroke="var(--border)" stroke-width="1.5" />
           <path d="M24,64 A106,52 0 0,1 236,64" fill="none" stroke="var(--c-astro)" stroke-width="2" stroke-dasharray="4,3" />
-          <circle id="sunArcPos" cx="185" cy="22" r="7" fill="var(--c-astro)" />
+          <circle id="sunArcPos" cx="130" cy="12" r="7" fill="var(--c-astro)" />
         </svg>
         <div class="kv-row tabular"><span>Sunrise / Sunset:</span><strong id="sunTimesTxt">05:56 AM / 05:24 PM</strong></div>
-        <div class="kv-row tabular"><span>Solar Noon / Golden Hr:</span><strong id="solarNoonTxt">11:40 AM / 04:50 PM</strong></div>
-        <div class="kv-row tabular"><span>Moon Illum / Next Full:</span><strong id="moonMetaTxt">88% • ~4d</strong></div>
+        <div class="kv-row tabular"><span>Today Low / High:</span><strong id="solarNoonTxt">--.-° / --.-°</strong></div>
+        <div class="kv-row tabular"><span>Peak Feels / 1h Drop:</span><strong id="moonMetaTxt">--.-° / -0.00 hPa</strong></div>
       </section>
 
       <section class="card">
         <div class="card-hd">
-          <span class="card-lbl">Stargazing &amp; Sky Clarity</span>
-          <span class="badge b-ok" id="clarityScoreBadge">78 / 100</span>
+          <span class="card-lbl">Sky Clarity &amp; Condensation</span>
+          <span class="badge b-ok" id="clarityScoreBadge">-- / 100</span>
         </div>
-        <div style="font-size:1.75rem; font-weight:900; color:var(--accent);" class="tabular" id="clarityBigNum">78% Clear</div>
-        <p class="muted" style="margin-top:4px;" id="clarityReasonTxt">Low cloud cover &amp; stable pressure; moderate humidity.</p>
+        <div style="font-size:1.75rem; font-weight:900; color:var(--accent);" class="tabular" id="clarityBigNum">--% Clear</div>
+        <p class="muted" style="margin-top:4px;" id="clarityReasonTxt">Awaiting telemetry.</p>
         <div class="kv-row tabular" style="margin-top:8px;">
-          <span>Dew / Lens Condensation:</span>
-          <strong id="condensationRiskTxt">Low Risk (Spread 4.2°C)</strong>
+          <span>Fog / Lens Condensation:</span>
+          <strong id="condensationRiskTxt">--</strong>
         </div>
       </section>
 
       <section class="card">
         <div class="card-hd">
-          <span class="card-lbl">Celestial &amp; ISS Tracker</span>
-          <span class="badge">LEO PASS</span>
+          <span class="card-lbl">Station Hardware Health</span>
+          <span class="badge" id="espHealthBadge">ESP32</span>
         </div>
-        <div class="kv-row tabular"><span>Next Visible ISS Pass:</span><strong id="issPassTxt">Tonight 07:42 PM</strong></div>
-        <div class="kv-row tabular"><span>ISS Azimuth / Max El:</span><strong id="issElevTxt">SW → NE • 54°</strong></div>
-        <div class="kv-row"><span>Visible Planets:</span><strong>Jupiter, Saturn (Evening)</strong></div>
-        <div class="kv-row"><span>Meteor / Event:</span><strong>Geminids approaching peak</strong></div>
+        <div class="kv-row tabular"><span>Chip / Flash:</span><strong id="hwChipTxt">ESP32 • 4MB</strong></div>
+        <div class="kv-row tabular"><span>Heap / Die Temp:</span><strong id="hwHeapTxt">-- KB • --.-°C</strong></div>
+        <div class="kv-row tabular"><span>Wi-Fi / RSSI:</span><strong id="hwWifiTxt">STA • -- dBm</strong></div>
+        <div class="kv-row tabular"><span>Uptime / Reset:</span><strong id="hwUptimeTxt">-- • --</strong></div>
       </section>
     </div>
 
@@ -456,13 +452,13 @@
       </div>
       <div class="bento-2" style="margin-bottom:0;">
         <div>
-          <div class="kv-row tabular"><span>Recovered Post-Reboot Records:</span><strong id="nvsRecoveredTxt">144 (10m) • 48 (30m)</strong></div>
-          <div class="kv-row tabular"><span>Sensor Gap Guard (NaN/0 Filter):</span><strong id="gapGuardTxt">Active • 0 invalid spikes</strong></div>
+          <div class="kv-row tabular"><span>History / 30m Snapshots:</span><strong id="nvsRecoveredTxt">0 (10m) • 0 (30m)</strong></div>
+          <div class="kv-row tabular"><span>BME280 / I2C Err / Rec:</span><strong id="gapGuardTxt">-- • 0 err / 0 rec</strong></div>
         </div>
         <div>
-          <div class="kv-row tabular"><span>AI Baseline &amp; Weights Backup:</span><strong id="aiVaultTxt">Synced to NVS + RTC</strong></div>
+          <div class="kv-row tabular"><span>SGD AI &amp; Baro Calibration:</span><strong id="aiVaultTxt">0 steps • +0.00 hPa</strong></div>
           <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
-            <button class="btn btn-primary" onclick="exportDataset('csv')">⬇ Export AI Dataset (CSV)</button>
+            <a class="btn btn-primary" href="/api/export.csv" onclick="return handleCsvExportClick(event)">⬇ Export AI Dataset (CSV)</a>
             <button class="btn" onclick="exportDataset('json')">⬇ Export JSON</button>
           </div>
         </div>
@@ -480,7 +476,7 @@
       </div>
 
       <div id="pinGate">
-        <p class="muted">Enter station PIN to unlock Wi-Fi NVS slots, cloud bridge endpoints, and remote reboot.</p>
+        <p class="muted">Enter station PIN to unlock Wi-Fi NVS slots, live advisory feed URL, calibration, and remote reboot.</p>
         <div class="field">
           <label>Access PIN</label>
           <input type="password" id="pinInput" maxlength="8" placeholder="Default: 1234" value="1234" />
@@ -489,31 +485,70 @@
       </div>
 
       <div id="configUnlocked" style="display:none;">
-        <div class="card-lbl" style="margin-top:6px;">Multi-Wi-Fi NVS Failover (Up to 3 SSIDs)</div>
-        <div class="field"><label>Slot 1 SSID (Primary)</label><input type="text" id="cfgSsid1" value="JDFam_2.4G" /></div>
-        <div class="field"><label>Slot 1 Password</label><input type="password" id="cfgPass1" placeholder="••••••••" /></div>
-        <div class="field"><label>Slot 2 SSID (Backup)</label><input type="text" id="cfgSsid2" placeholder="Optional backup SSID" /></div>
-        <div class="field"><label>Slot 3 SSID (Fallback)</label><input type="text" id="cfgSsid3" placeholder="Optional fallback SSID" /></div>
-
-        <div class="card-lbl" style="margin-top:14px;">Cloud Relay &amp; Polling</div>
-        <div class="field"><label>Cloud Relay Endpoint (MQTT / Firebase / Webhook)</label><input type="text" id="cfgCloudUrl" placeholder="https://your-relay.example.com/telemetry" /></div>
+        <div class="card-lbl" style="margin-top:6px;">Live Advisory Feed Extraction (STA Mode)</div>
         <div class="field">
-          <label>Polling Interval</label>
-          <select id="cfgInterval">
-            <option value="15000">15 seconds</option>
-            <option value="30000">30 seconds</option>
-            <option value="60000" selected>60 seconds</option>
-            <option value="300000">5 minutes</option>
+          <label>Live Advisory Feed URL (JSON array or RSS/Atom bridge for PAGASA, NDRRMC, PHIVOLCS, FB, X)</label>
+          <input type="text" id="cfgAdvisoryFeedUrl" placeholder="https://your-feed-proxy.example.com/advisories.json" />
+        </div>
+        <div class="field">
+          <label>Include Live Sensor/Model Trigger Item (Computed from real /api/sensors data)</label>
+          <select id="cfgIncludeSignal">
+            <option value="1" selected>Yes (Only when sensor/model threshold triggers)</option>
+            <option value="0">No (Only external feed bulletins)</option>
           </select>
         </div>
 
+        <div class="card-lbl" style="margin-top:12px;">Calibration &amp; Elevation</div>
+        <div class="grid-2-in">
+          <div class="field"><label>Temp Offset (°C)</label><input type="number" step="0.05" id="cfgTOff" value="0" /></div>
+          <div class="field"><label>Humidity Offset (%RH)</label><input type="number" step="0.1" id="cfgHOff" value="0" /></div>
+          <div class="field"><label>Pressure Offset (hPa)</label><input type="number" step="0.05" id="cfgPOff" value="0" /></div>
+          <div class="field"><label>Elevation (m)</label><input type="number" step="0.5" id="cfgElev" value="113" /></div>
+        </div>
+
+        <div class="card-lbl" style="margin-top:12px;">Alert Thresholds &amp; Telemetry Interval</div>
+        <div class="grid-2-in">
+          <div class="field"><label>Heat Alert (°C)</label><input type="number" step="0.5" id="cfgHThr" value="38" /></div>
+          <div class="field"><label>1h Pressure Drop (hPa/h)</label><input type="number" step="0.1" id="cfgPThr" value="2.0" /></div>
+          <div class="field"><label>Rain Rate Alert (mm/h)</label><input type="number" step="0.5" id="cfgRThr" value="7.5" /></div>
+          <div class="field">
+            <label>Polling / Telemetry (sec)</label>
+            <select id="cfgInterval">
+              <option value="15000">15 seconds</option>
+              <option value="30000">30 seconds</option>
+              <option value="60000" selected>60 seconds</option>
+              <option value="300000">5 minutes</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card-lbl" style="margin-top:12px;">Multi-Wi-Fi NVS Failover (Up to 3 SSIDs)</div>
+        <div class="field"><label>Slot 1 SSID (Primary)</label><input type="text" id="cfgSsid1" placeholder="Primary Wi-Fi SSID" /></div>
+        <div class="field"><label>Slot 1 Password</label><input type="password" id="cfgPass1" placeholder="Leave blank to keep current" /></div>
+        <div class="grid-2-in">
+          <div class="field"><label>Slot 2 SSID</label><input type="text" id="cfgSsid2" placeholder="Optional backup SSID" /></div>
+          <div class="field"><label>Slot 2 Password</label><input type="password" id="cfgPass2" placeholder="Optional" /></div>
+          <div class="field"><label>Slot 3 SSID</label><input type="text" id="cfgSsid3" placeholder="Optional fallback SSID" /></div>
+          <div class="field"><label>Slot 3 Password</label><input type="password" id="cfgPass3" placeholder="Optional" /></div>
+        </div>
+
+        <div class="card-lbl" style="margin-top:12px;">Push Alerts &amp; Integrations</div>
+        <div class="grid-2-in">
+          <div class="field"><label>Telegram Bot Token</label><input type="text" id="cfgTgTok" placeholder="Optional" /></div>
+          <div class="field"><label>Telegram Chat ID</label><input type="text" id="cfgTgChat" placeholder="Optional" /></div>
+          <div class="field"><label>WU Station ID</label><input type="text" id="cfgWuId" placeholder="Optional" /></div>
+          <div class="field"><label>ThingSpeak Write Key</label><input type="text" id="cfgTsKey" placeholder="Optional" /></div>
+        </div>
+        <div class="field"><label>Discord Webhook / JSON Relay URL</label><input type="text" id="cfgCloudUrl" placeholder="https://..." /></div>
+
         <div class="card-lbl" style="margin-top:14px;">Live Diagnostics</div>
-        <div class="kv-row tabular"><span>Active Mode:</span><strong id="diagMode">LAN (192.168.0.229)</strong></div>
-        <div class="kv-row tabular"><span>Wi-Fi RSSI / Uptime:</span><strong id="diagRssi">-54 dBm • 4h 12m</strong></div>
-        <div class="kv-row tabular"><span>Free Heap / Reset:</span><strong id="diagHeap">182 KB • Power-On</strong></div>
+        <div class="kv-row tabular"><span>Active Mode / Host:</span><strong id="diagMode">STA</strong></div>
+        <div class="kv-row tabular"><span>Wi-Fi RSSI / Uptime:</span><strong id="diagRssi">-- dBm • --</strong></div>
+        <div class="kv-row tabular"><span>Free Heap / Reset:</span><strong id="diagHeap">-- KB • --</strong></div>
 
         <div style="display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;">
           <button class="btn btn-primary" onclick="saveConfigSheet()">Save to NVS</button>
+          <a class="btn" href="/update">⬆ OTA Flash</a>
           <button class="btn" style="border-color:rgba(220,38,38,0.45); color:var(--danger);" onclick="softRebootEsp()">⏻ Soft Reboot ESP32</button>
         </div>
       </div>
@@ -524,12 +559,12 @@
   <div class="sheet-backdrop" id="modelBackdrop" onclick="if(event.target===this)closeModelBreakdown()">
     <div class="sheet-panel">
       <div class="card-hd">
-        <span class="card-lbl">14 Global Weather Models vs. BME280</span>
+        <span class="card-lbl">14 Global Weather Models vs. BME280 (Learned SGD)</span>
         <button class="btn" onclick="closeModelBreakdown()">✕</button>
       </div>
       <div class="scroll-x">
         <table>
-          <thead><tr><th>Agency / Model</th><th>Temp</th><th>Rain %</th><th>SLP</th><th>Match</th></tr></thead>
+          <thead><tr><th>Agency / Model</th><th>Temp</th><th>Rain %</th><th>SLP</th><th>Weight</th><th>MAE</th></tr></thead>
           <tbody id="modal14Body"></tbody>
         </table>
       </div>
@@ -537,137 +572,236 @@
   </div>
 
   <script>
-    const ESP32_IP = '192.168.0.229';
-    const ESP32_BASE_URL = `http://${ESP32_IP}`;
-
     const STATE = {
       unit: localStorage.getItem('jl_unit') || 'C',
       theme: localStorage.getItem('jl_theme') || 'auto',
       agencyFilter: 'ALL',
-      pollMs: 60000,
+      pollMs: parseInt(localStorage.getItem('jl_poll_ms') || '60000', 10) || 60000,
       cloudRelayUrl: localStorage.getItem('jl_cloud_url') || '',
-      connMode: 'LAN',
+      advisoryFeedUrl: localStorage.getItem('jl_advisory_feed_url') || '',
+      includeSensorSignal: localStorage.getItem('jl_include_signal') !== '0',
+      connMode: 'STA',
       telemetry: null,
+      health: null,
+      liveFeedItems: [],
+      feedStatus: 'No Feed URL',
+      lastFeedSync: null,
+      pollTimer: null
+    };
+
+    const BASELINE_TELEMETRY = {
+      stationName: 'San Jose City, Nueva Ecija',
+      lat: 15.8003302,
+      lon: 121.0030307,
+      gmtOffsetSec: 28800,
+      elev: 113.0,
+      pressOffset: 0.0,
+      heatThr: 38.0,
+      temp: null,
+      minT: null,
+      maxT: null,
+      peakHI: null,
+      peakHum: null,
+      minHumToday: null,
+      minCorrP: null,
+      max1hDrop: 0.0,
+      minTT: '--:--',
+      maxTT: '--:--',
+      peakHT: '--:--',
+      peakHuT: '--:--',
+      minHumT: '--:--',
+      minPT: '--:--',
+      maxDropT: '--:--',
+      hi: null,
+      forecastHi: null,
+      aiNextTemp: null,
+      meanModelTemp: null,
+      meanRainProb: 0,
+      reportingRainModels: 0,
+      agreeingRainModels: 0,
+      earlyWarningTier: 'Awaiting Telemetry',
+      earlyWarningDetail: 'Connect to ESP32 or configure a live advisory feed URL.',
+      weatherSystem: '--',
+      neighborhoodImpact: '',
+      aiSteps: 0,
+      hum: null,
+      dew: null,
+      wetBulb: null,
+      vpd: 0,
+      cloudBaseM: 600,
+      rawP: null,
+      slp: null,
+      corrP: null,
+      d3hP: 0,
+      d24hP: 0,
+      accelP: 0,
+      wmoCode: 4,
+      wmoLabel: '--',
+      squall: '--',
+      fogDew: '--',
+      thunderStatus: '--',
+      thunderDetail: '',
+      pagasaRain: '--',
+      pagasaTcws: '--',
+      phivolcsEq: '--',
+      phivolcsTsunami: '--',
+      terrain: '--',
+      epoch: Math.floor(Date.now() / 1000),
+      syncedTs: new Date().toLocaleTimeString(),
+      pHist: [],
+      tHist: [],
+      hHist: [],
       models14: [],
       hourly: [],
       daily: []
     };
 
-    const MOCK_TELEMETRY = {
-      stationName: 'Juan Lookout • San Jose City',
-      lat: 15.8003302,
-      lon: 121.0030307,
-      tempC: 29.4,
-      humPct: 74,
-      dewC: 24.2,
-      hiC: 33.1,
-      slpHpa: 1013.4,
-      d3hP: -0.4,
-      windKmh: 14,
-      windDirDeg: 45,
-      gustKmh: 24,
-      rainProb: 20,
-      rainMmH: 0.0,
-      cloudCoverPct: 34,
-      uvIndex: 5,
-      visibilityKm: 10.0,
-      syncedModel: 'ECMWF IFS 9km',
-      sensorMatchPct: 98.6,
-      aiSteps: 148,
-      nvsRecovered10m: 144,
-      nvsRecovered30m: 48,
-      wifiRssi: -53,
-      ipAddr: ESP32_IP,
-      uptimeStr: '3d 14h 22m',
-      freeHeapKb: 184.5,
-      resetReason: 'Power-On',
-      sunrise: '05:56 AM',
-      sunset: '05:24 PM',
-      solarNoon: '11:40 AM',
-      goldenHour: '04:50 PM',
-      moonPhase: '🌔 Waxing Gibbous',
-      moonIllum: 86,
-      nextLunarEvent: 'Full Moon in 3d',
-      issPass: 'Tonight 07:42 PM',
-      issGeom: 'SW → NE • 54°',
-      issuedTs: '25 Nov 2026 05:00 PM PHST',
-      syncedTs: new Date().toLocaleTimeString(),
-      baroSpark: [1014.1, 1013.9, 1013.7, 1013.5, 1013.4],
-      alerts: [
-        {
-          agency: 'PAGASA',
-          severity: 'yellow',
-          tier: 'Yellow Rainfall / Thunderstorm Watch',
-          title: 'PAGASA — Local Thunderstorm & Shear Line Advisory (Luzon)',
-          issued: '25 Nov 2026 04:30 PM PHST',
-          areas: 'San Jose City, Lupao, Carranglan, Rizal, and Sierra Madre / Caraballo foothills',
-          detail: 'Light to moderate rain showers with occasional lightning and gusty winds may affect parts of Nueva Ecija during afternoon/evening convective buildup.',
-          actions: 'Monitor local drainage near creeks/low roads; secure light outdoor items during gusts.'
-        },
-        {
-          agency: 'NDRRMC',
-          severity: 'yellow',
-          tier: 'Preparedness Advisory',
-          title: 'NDRRMC — Regional Weather & Flood Preparedness Notice',
-          issued: '25 Nov 2026 02:00 PM PHST',
-          areas: 'Region III (Central Luzon) — Nueva Ecija',
-          detail: 'LDRRMCs advised to maintain heightened situational awareness and coordinate barangay monitoring along river tributaries.',
-          actions: 'Keep emergency go-bag, flashlight, and weather alerts accessible.'
-        },
-        {
-          agency: 'PHIVOLCS',
-          severity: 'normal',
-          tier: 'Baseline Monitoring',
-          title: 'PHIVOLCS — Tectonic & Inland Seismic Status',
-          issued: '25 Nov 2026 12:00 PM PHST',
-          areas: 'San Jose City, Nueva Ecija (Inland)',
-          detail: 'No active volcano alert in immediate vicinity; inland seismic network operating normally.',
-          actions: 'Review DUCK, COVER, AND HOLD protocols with household.'
-        }
-      ],
-      models14: [
-        { name: 'ECMWF IFS 9km', tempC: 29.3, rainProb: 18, slpHpa: 1013.5, match: 98.6 },
-        { name: 'ECMWF IFS 0.25', tempC: 29.5, rainProb: 20, slpHpa: 1013.4, match: 97.9 },
-        { name: 'ECMWF AIFS (AI)', tempC: 29.2, rainProb: 15, slpHpa: 1013.6, match: 98.1 },
-        { name: 'NOAA GFS', tempC: 30.1, rainProb: 25, slpHpa: 1012.8, match: 95.4 },
-        { name: 'GraphCast (AI)', tempC: 29.4, rainProb: 18, slpHpa: 1013.3, match: 97.5 },
-        { name: 'DWD ICON', tempC: 29.6, rainProb: 22, slpHpa: 1013.2, match: 96.8 },
-        { name: 'JMA GSM', tempC: 29.1, rainProb: 15, slpHpa: 1013.8, match: 96.2 },
-        { name: 'CMC GEM', tempC: 29.8, rainProb: 24, slpHpa: 1013.0, match: 95.8 },
-        { name: 'Meteo-France', tempC: 29.4, rainProb: 20, slpHpa: 1013.4, match: 96.5 },
-        { name: 'UKMO Global', tempC: 29.7, rainProb: 21, slpHpa: 1013.1, match: 96.0 },
-        { name: 'BOM ACCESS-G', tempC: 29.2, rainProb: 16, slpHpa: 1013.6, match: 95.9 },
-        { name: 'CMA GRAPES', tempC: 29.9, rainProb: 25, slpHpa: 1012.9, match: 95.2 },
-        { name: 'OM Best Match', tempC: 29.4, rainProb: 20, slpHpa: 1013.4, match: 98.2 },
-        { name: 'MET Norway', tempC: 29.3, rainProb: 18, slpHpa: 1013.5, match: 97.1 }
-      ],
-      hourly: Array.from({ length: 12 }, (_, i) => {
-        const hr = (new Date().getHours() + i) % 24;
-        const lbl = (hr % 12 || 12) + (hr >= 12 ? ' PM' : ' AM');
-        const wave = Math.sin(((hr - 6) / 24) * Math.PI * 2);
-        const tC = 27.5 + wave * 3.8 + (i === 0 ? 0.4 : 0);
+    function formatDateTimePHST(rawDate) {
+      if (!rawDate) return 'Date/Time unavailable';
+      const dt = new Date(rawDate);
+      if (Number.isNaN(dt.getTime())) return String(rawDate);
+      return dt.toLocaleString('en-PH', {
+        timeZone: 'Asia/Manila',
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      }) + ' PHST';
+    }
+
+    function normalizeAgency(rawAgency, title, sourceUrl) {
+      const text = `${rawAgency || ''} ${title || ''} ${sourceUrl || ''}`.toUpperCase();
+      if (text.includes('PAGASA')) return 'PAGASA';
+      if (text.includes('NDRRMC')) return 'NDRRMC';
+      if (text.includes('PHIVOLCS')) return 'PHIVOLCS';
+      if (text.includes('FACEBOOK') || text.includes('FB.COM') || text.includes('TWITTER') || text.includes('X.COM') || rawAgency === 'FB/X') return 'FB/X';
+      if (rawAgency === 'STATION') return 'STATION';
+      return (rawAgency || 'FEED').toUpperCase();
+    }
+
+    function parseRssOrAtomXml(xmlText) {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(xmlText, 'application/xml');
+      if (doc.querySelector('parsererror')) return [];
+      const entries = Array.from(doc.querySelectorAll('item, entry'));
+      return entries.map((el) => {
+        const title = (el.querySelector('title')?.textContent || '').trim();
+        const link = (el.querySelector('link')?.getAttribute('href') || el.querySelector('link')?.textContent || '').trim();
+        const pub = (el.querySelector('pubDate, updated, published, dc\\:date')?.textContent || '').trim();
+        const desc = (el.querySelector('description, summary, content')?.textContent || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+        const agency = normalizeAgency('', title, link);
         return {
-          label: i === 0 ? 'Now' : lbl,
-          tempC: Number(tC.toFixed(1)),
-          rainProb: Math.max(5, Math.min(85, Math.round(18 + (i % 4) * 9))),
-          windKmh: Math.round(12 + Math.cos(i * 0.6) * 4),
-          windDeg: 45 + i * 5
+          agency,
+          severity: 'normal',
+          tier: agency === 'FB/X' ? 'Social Post' : 'Official Bulletin',
+          title: title || 'Advisory Update',
+          publishedAt: formatDateTimePHST(pub),
+          areas: 'Philippines / Central Luzon',
+          detail: desc || title,
+          actions: 'Verify details inside the bulletin reader.',
+          sourceUrl: link
         };
-      }),
-      daily: [
-        { day: 'Thu', sky: 'Partly Cloudy', lowC: 23, highC: 32, rainProb: 25 },
-        { day: 'Fri', sky: 'Scattered Showers', lowC: 23, highC: 31, rainProb: 55 },
-        { day: 'Sat', sky: 'Passing Clouds', lowC: 22, highC: 31, rainProb: 30 },
-        { day: 'Sun', sky: 'Sunny Intervals', lowC: 22, highC: 32, rainProb: 15 },
-        { day: 'Mon', sky: 'Warm & Breezy', lowC: 23, highC: 33, rainProb: 20 },
-        { day: 'Tue', sky: 'Afternoon T-Storm', lowC: 23, highC: 31, rainProb: 60 },
-        { day: 'Wed', sky: 'Partly Cloudy', lowC: 22, highC: 32, rainProb: 25 }
-      ]
-    };
+      });
+    }
+
+    function parseJsonFeed(payload) {
+      const arr = Array.isArray(payload)
+        ? payload
+        : (Array.isArray(payload?.items) ? payload.items : (Array.isArray(payload?.advisories) ? payload.advisories : []));
+      return arr.map((item) => {
+        const agency = normalizeAgency(item.agency || item.source || item.platform, item.title || item.headline, item.url || item.link);
+        const sevRaw = String(item.severity || item.level || '').toLowerCase();
+        const severity = (sevRaw.includes('red') || sevRaw.includes('warn') || sevRaw.includes('danger'))
+          ? 'red'
+          : ((sevRaw.includes('orange') || sevRaw.includes('watch')) ? 'orange' : ((sevRaw.includes('yellow')) ? 'yellow' : 'normal'));
+        const tsRaw = item.publishedAt || item.issued || item.date || item.timestamp || item.updated_at || '';
+        return {
+          agency,
+          severity,
+          tier: item.tier || item.category || (agency === 'FB/X' ? 'Social Post' : 'Live Bulletin'),
+          title: item.title || item.headline || 'Advisory Update',
+          publishedAt: formatDateTimePHST(tsRaw),
+          areas: item.areas || item.region || 'Philippines / Nueva Ecija',
+          detail: item.detail || item.summary || item.text || item.body || '',
+          actions: item.actions || item.guidance || 'Follow official local disaster guidance.',
+          sourceUrl: item.url || item.link || ''
+        };
+      });
+    }
+
+    async function fetchExternalAdvisories() {
+      if (!STATE.advisoryFeedUrl) {
+        STATE.liveFeedItems = [];
+        STATE.feedStatus = 'Feed URL Not Set';
+        return;
+      }
+
+      try {
+        const ctrl = new AbortController();
+        const tid = setTimeout(() => ctrl.abort(), 4500);
+        const res = await fetch(STATE.advisoryFeedUrl, { signal: ctrl.signal });
+        clearTimeout(tid);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const rawText = await res.text();
+        let parsed = [];
+        try {
+          const json = JSON.parse(rawText);
+          parsed = parseJsonFeed(json);
+        } catch (_) {
+          parsed = parseRssOrAtomXml(rawText);
+        }
+        STATE.liveFeedItems = parsed;
+        STATE.feedStatus = `Live (${parsed.length})`;
+        STATE.lastFeedSync = formatDateTimePHST(new Date().toISOString());
+      } catch (_) {
+        STATE.feedStatus = 'Feed Offline';
+        if (!STATE.lastFeedSync) STATE.liveFeedItems = [];
+      }
+    }
+
+    function buildSensorSignals(d) {
+      if (!STATE.includeSensorSignal || !d || d.temp === null || d.temp === undefined) return [];
+      const out = [];
+      const when = formatDateTimePHST(new Date().toISOString());
+
+      if (Number(d.d3hP || 0) <= -1.6) {
+        out.push({
+          agency: 'STATION',
+          severity: 'yellow',
+          tier: 'Barometer Drop Signal',
+          title: `Local BME280 Barometer Drop (${Number(d.d3hP).toFixed(1)} hPa / 3h)`,
+          publishedAt: when,
+          areas: d.stationName,
+          detail: `Sea-level pressure is ${Number(d.slp).toFixed(1)} hPa with ${Math.round(d.meanRainProb || 0)}% average model rain probability (${d.agreeingRainModels || 0}/${d.reportingRainModels || 0} models ≥50%).`,
+          actions: 'Computed strictly from live station sensor and model telemetry—not an official agency bulletin.'
+        });
+      }
+
+      if (Number(d.hi || 0) >= Number(d.heatThr || 38)) {
+        out.push({
+          agency: 'STATION',
+          severity: 'orange',
+          tier: 'Heat Threshold Signal',
+          title: `Local Heat Index ${fmtTemp(d.hi)} ≥ ${fmtTemp(d.heatThr || 38)} Threshold`,
+          publishedAt: when,
+          areas: d.stationName,
+          detail: `Ambient temp ${fmtTemp(d.temp)} and relative humidity ${Math.round(d.hum || 0)}% reached your configured heat threshold.`,
+          actions: 'Computed from live BME280 telemetry—stay hydrated and limit direct sun exposure.'
+        });
+      }
+
+      return out;
+    }
+
+    function getCombinedAlerts(d) {
+      return [...STATE.liveFeedItems, ...buildSensorSignals(d)];
+    }
 
     function fmtTemp(c, withUnit = true) {
-      if (c === null || c === undefined || Number.isNaN(c)) return '--.-';
-      const val = STATE.unit === 'F' ? (c * 1.8 + 32) : c;
+      if (c === null || c === undefined || Number.isNaN(Number(c))) return '--.-';
+      const val = STATE.unit === 'F' ? (Number(c) * 1.8 + 32) : Number(c);
       return val.toFixed(1) + (withUnit ? ('°' + STATE.unit) : '°');
     }
 
@@ -718,7 +852,7 @@
     function renderHazards(d) {
       const banner = document.getElementById('hazardBanner');
       banner.classList.remove('sev-yellow', 'sev-orange', 'sev-red');
-      const allAlerts = d.alerts || [];
+      const allAlerts = getCombinedAlerts(d);
       const hasRed = allAlerts.some(a => a.severity === 'red');
       const hasOrange = allAlerts.some(a => a.severity === 'orange');
       const hasYellow = allAlerts.some(a => a.severity === 'yellow');
@@ -726,18 +860,12 @@
       else if (hasOrange) banner.classList.add('sev-orange');
       else if (hasYellow) banner.classList.add('sev-yellow');
 
-      if (hasRed || hasOrange || hasYellow) toggleHazardBanner(true);
+      const feedBadge = document.getElementById('baroCrossCheckBadge');
+      feedBadge.textContent = `Feed: ${STATE.feedStatus}`;
+      feedBadge.className = STATE.feedStatus.startsWith('Live') ? 'badge b-ok' : 'badge b-warn';
 
-      const baroBadge = document.getElementById('baroCrossCheckBadge');
-      if (d.d3hP <= -1.6) {
-        baroBadge.textContent = `Baro Cross-Check: Drop (${d.d3hP.toFixed(1)} hPa/3h)`;
-        baroBadge.className = 'badge b-crit';
-      } else {
-        baroBadge.textContent = `Baro Cross-Check: Steady (${d.d3hP >= 0 ? '+' : ''}${d.d3hP.toFixed(1)} hPa/3h)`;
-        baroBadge.className = 'badge b-ok';
-      }
-
-      document.getElementById('hazardTimestamps').textContent = `Issued: ${d.issuedTs} • Synced: ${d.syncedTs}`;
+      document.getElementById('hazardTimestamps').textContent =
+        `Feed Sync: ${STATE.lastFeedSync || 'Not synced'} • Telemetry: ${d.syncedTs}`;
       document.getElementById('hazardPulse').style.animation = 'none';
       void document.getElementById('hazardPulse').offsetWidth;
       document.getElementById('hazardPulse').style.animation = 'pulseAnim 2s infinite';
@@ -746,17 +874,33 @@
         ? allAlerts
         : allAlerts.filter(a => a.agency === STATE.agencyFilter);
 
-      document.getElementById('hazardCountLbl').textContent = `${filtered.length} bulletin(s)`;
+      document.getElementById('hazardCountLbl').textContent = `${filtered.length} item(s)`;
       const listEl = document.getElementById('hazardList');
+
+      if (!filtered.length) {
+        listEl.innerHTML = `
+          <div class="alert-item" style="cursor:default;">
+            <strong>No active ${STATE.agencyFilter === 'ALL' ? '' : STATE.agencyFilter + ' '}bulletins in live feed</strong>
+            <div class="muted" style="margin-top:3px;">
+              ${STATE.advisoryFeedUrl
+                ? 'No items returned for this filter from your configured feed URL. Fake/placeholder advisories are disabled.'
+                : 'No live advisory feed URL configured yet. Open ⚙ Config to set your PAGASA / NDRRMC / PHIVOLCS / FB / X feed endpoint.'}
+            </div>
+          </div>
+        `;
+        window._activeFilteredAlerts = [];
+        return;
+      }
+
       listEl.innerHTML = filtered.map((a, idx) => `
         <div class="alert-item" onclick="selectAlert(${idx})">
           <div style="display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap;">
             <strong>[${a.agency}] ${a.title}</strong>
             <span class="badge ${a.severity === 'red' ? 'b-crit' : (a.severity === 'yellow' || a.severity === 'orange' ? 'b-warn' : 'b-ok')}">${a.tier}</span>
           </div>
-          <div class="muted tabular" style="margin-top:3px;">Issued: ${a.issued} • Areas: ${a.areas}</div>
+          <div class="muted tabular" style="margin-top:3px;">Date/Time: ${a.publishedAt} • Areas: ${a.areas}</div>
         </div>
-      `).join('') || '<div class="muted" style="margin-top:8px;">No bulletins for selected agency.</div>';
+      `).join('');
 
       window._activeFilteredAlerts = filtered;
     }
@@ -764,132 +908,167 @@
     function selectAlert(idx) {
       const item = (window._activeFilteredAlerts || [])[idx];
       if (!item) return;
+      const srcLine = item.sourceUrl
+        ? `<div class="muted" style="margin-top:6px;"><strong>Source Ref:</strong> ${item.sourceUrl}</div>`
+        : '';
       document.getElementById('hazardReader').innerHTML = `
-        <div style="font-weight:800; margin-bottom:4px;">${item.title} (${item.issued})</div>
-        <div><strong>Affected Areas:</strong> ${item.areas}</div>
-        <div style="margin-top:4px;">${item.detail}</div>
-        <div style="margin-top:6px; color:var(--accent);"><strong>Recommended Action:</strong> ${item.actions}</div>
+        <div style="font-weight:800; margin-bottom:4px;">[${item.agency}] ${item.title}</div>
+        <div class="muted tabular"><strong>Date &amp; Time:</strong> ${item.publishedAt} • <strong>Areas:</strong> ${item.areas}</div>
+        <div style="margin-top:6px;">${item.detail}</div>
+        <div style="margin-top:6px; color:var(--accent);"><strong>Note / Guidance:</strong> ${item.actions}</div>
+        ${srcLine}
       `;
     }
 
     function renderAll(d) {
       applyThemeMode();
-      document.getElementById('hdrStationName').textContent = d.stationName;
+      document.getElementById('hdrStationName').textContent = `Juan Lookout • ${d.stationName}`;
       document.getElementById('hdrClock').textContent =
-        `${d.lat.toFixed(4)}°N, ${d.lon.toFixed(4)}°E • ${new Date().toLocaleTimeString()}`;
-      document.getElementById('hdrTemp').textContent = fmtTemp(d.tempC);
+        `${Number(d.lat).toFixed(4)}°N, ${Number(d.lon).toFixed(4)}°E • ${d.syncedTs}`;
+      document.getElementById('hdrTemp').textContent = fmtTemp(d.temp);
 
       const modeBadge = document.getElementById('connModeBadge');
       modeBadge.textContent = STATE.connMode;
-      modeBadge.className = STATE.connMode === 'LAN' ? 'badge b-ok' : 'badge b-warn';
+      modeBadge.className = STATE.connMode === 'STA' ? 'badge b-ok' : 'badge b-warn';
 
       renderHazards(d);
 
       document.getElementById('syncedModelBadge').textContent =
-        `Synced Model: ${d.syncedModel} • ${d.sensorMatchPct.toFixed(1)}% Sensor Match ▸`;
-      document.getElementById('heroTemp').textContent = fmtTemp(d.tempC);
+        `AI Next-Hr: ${fmtTemp(d.aiNextTemp)} • ${d.aiSteps || 0} SGD Steps ▸`;
+      document.getElementById('heroTemp').textContent = fmtTemp(d.temp);
+      document.getElementById('heroCond').textContent = `${d.wmoLabel || '--'} • ${d.weatherSystem || '--'}`;
       document.getElementById('heroFeels').textContent =
-        `Feels Like ${fmtTemp(d.hiC)} • Dew Point ${fmtTemp(d.dewC)}`;
+        `Feels Like ${fmtTemp(d.hi)} • Dew Point ${fmtTemp(d.dew)}`;
       document.getElementById('heroPlainSummary').textContent =
-        `Local sensor reads ${fmtTemp(d.tempC)} with ${d.humPct}% RH and ${d.windKmh} km/h ${degToDir(d.windDirDeg)} breeze in San Jose City; ${d.rainProb}% chance of rain in the next hour.`;
+        `${d.neighborhoodImpact || d.earlyWarningDetail || ''} Next-hour model mean ${fmtTemp(d.meanModelTemp)} with ${Math.round(d.meanRainProb || 0)}% average rain probability.`;
 
-      document.getElementById('windArrowGroup').setAttribute('transform', `rotate(${d.windDirDeg} 30 30)`);
-      document.getElementById('windMainTxt').textContent = `${d.windKmh} km/h ${degToDir(d.windDirDeg)}`;
-      document.getElementById('windGustTxt').textContent = `Gusts ${d.gustKmh} km/h`;
-      document.getElementById('slpHeroTxt').textContent = `${d.slpHpa.toFixed(1)} hPa`;
-      document.getElementById('rainHeroTxt').textContent = `${d.rainProb}% • ${d.rainMmH.toFixed(1)} mm/h`;
-      document.getElementById('cloudHeroTxt').textContent = `Cloud Cover ${d.cloudCoverPct}%`;
-      document.getElementById('uvHeroTxt').textContent = `UV ${d.uvIndex}`;
+      const firstHr = (d.hourly && d.hourly[0]) || { windKmh: 0, windDeg: 0 };
+      document.getElementById('windArrowGroup').setAttribute('transform', `rotate(${firstHr.windDeg || 0} 30 30)`);
+      document.getElementById('windMainTxt').textContent = `${firstHr.windKmh || 0} km/h ${degToDir(firstHr.windDeg || 0)}`;
+      document.getElementById('windGustTxt').textContent = `3h ΔP ${Number(d.d3hP || 0) >= 0 ? '+' : ''}${Number(d.d3hP || 0).toFixed(1)} hPa`;
+      document.getElementById('slpHeroTxt').textContent = (d.slp !== null && d.slp !== undefined) ? `${Number(d.slp).toFixed(1)} hPa` : '----.- hPa';
+      document.getElementById('rainHeroTxt').textContent = `${Math.round(d.meanRainProb || 0)}% • ${d.agreeingRainModels || 0}/${d.reportingRainModels || 0} ≥50%`;
+      document.getElementById('cloudHeroTxt').textContent = `Cloud Base ${Math.round(d.cloudBaseM || 600)} m`;
+      document.getElementById('uvHeroTxt').textContent = `WB ${fmtTemp(d.wetBulb)}`;
       document.getElementById('visHeroTxt').innerHTML =
-        `Vis ${d.visibilityKm.toFixed(1)} km • RH <strong id="heroRhVal">${d.humPct}%</strong> <span class="badge-src src-sensor">SENSOR</span>`;
+        `VPD ${Number(d.vpd || 0).toFixed(2)} kPa • RH <strong id="heroRhVal">${d.hum !== null && d.hum !== undefined ? Math.round(d.hum) + '%' : '--%'}</strong> <span class="badge-src src-sensor">SENSOR</span>`;
 
-      const sparkPts = (d.baroSpark || [1013, 1013.2, 1013.4]).map((v, i, arr) => {
+      const pArr = (d.pHist && d.pHist.length) ? d.pHist.slice(-18) : [d.slp || 1013];
+      const sparkPts = pArr.map((v, i, arr) => {
         const x = arr.length === 1 ? 70 : (i / (arr.length - 1)) * 140;
-        const y = 24 - ((v - 1005) / 15) * 18;
+        const y = 24 - ((Number(v) - 1005) / 15) * 18;
         return `${x.toFixed(1)},${Math.max(4, Math.min(26, y)).toFixed(1)}`;
       }).join(' ');
       document.getElementById('heroBaroSpark').setAttribute('points', sparkPts);
 
-      const uvRatio = Math.max(0, Math.min(1, d.uvIndex / 11));
+      const vpdRatio = Math.max(0, Math.min(1, Number(d.vpd || 0) / 2.5));
       const dashLen = 157;
-      document.getElementById('uvArcFill').setAttribute('stroke-dasharray', `${(uvRatio * dashLen).toFixed(1)} ${dashLen}`);
+      document.getElementById('uvArcFill').setAttribute('stroke-dasharray', `${(vpdRatio * dashLen).toFixed(1)} ${dashLen}`);
 
-      document.getElementById('hourlyStrip').innerHTML = (d.hourly || []).map(h => `
-        <div class="hr-tile tabular">
-          <div style="font-size:0.72rem; font-weight:700;">${h.label}</div>
-          <div style="font-size:0.95rem; font-weight:800; color:var(--c-temp); margin-top:3px;">${fmtTemp(h.tempC, false)}</div>
-          <div class="hr-bar-track"><div class="hr-bar-fill" style="height:${h.rainProb}%"></div></div>
-          <div style="font-size:0.68rem; color:var(--c-rain); font-weight:700;">${h.rainProb}%</div>
-          <div class="muted" style="font-size:0.68rem; margin-top:2px;">${degToDir(h.windDeg)} ${h.windKmh}</div>
-        </div>
-      `).join('');
+      document.getElementById('hourlyStrip').innerHTML = (d.hourly || []).length
+        ? d.hourly.map(h => `
+            <div class="hr-tile tabular">
+              <div style="font-size:0.72rem; font-weight:700;">${h.label}</div>
+              <div style="font-size:0.95rem; font-weight:800; color:var(--c-temp); margin-top:3px;">${fmtTemp(h.tempC, false)}</div>
+              <div class="hr-bar-track"><div class="hr-bar-fill" style="height:${h.rainProb}%"></div></div>
+              <div style="font-size:0.68rem; color:var(--c-rain); font-weight:700;">${h.rainProb}%</div>
+              <div class="muted" style="font-size:0.68rem; margin-top:2px;">${degToDir(h.windDeg)} ${h.windKmh}</div>
+            </div>
+          `).join('')
+        : '<div class="muted">No hourly forecast slots available yet.</div>';
 
-      const temps = (d.models14 || []).map(m => m.tempC);
-      const minM = Math.min(...temps);
-      const maxM = Math.max(...temps);
-      const avgM = temps.reduce((a, b) => a + b, 0) / Math.max(1, temps.length);
-      document.getElementById('spreadMin').textContent = fmtTemp(minM);
-      document.getElementById('spreadAvg').textContent = fmtTemp(avgM);
-      document.getElementById('spreadMax').textContent = fmtTemp(maxM);
-      const span = Math.max(0.5, maxM - minM);
-      const avgPct = Math.max(5, Math.min(95, ((avgM - minM) / span) * 100));
-      document.getElementById('spreadRange').style.left = '8%';
-      document.getElementById('spreadRange').style.right = '8%';
-      document.getElementById('spreadAvgDot').style.left = `${avgPct}%`;
-      const tightCount = temps.filter(t => Math.abs(t - avgM) <= 0.8).length;
-      document.getElementById('consensusPctBadge').textContent =
-        `${Math.round((tightCount / Math.max(1, temps.length)) * 100)}% Consensus (${temps.length} Models)`;
+      const temps = (d.models14 || []).filter(m => m.validTemp !== false && m.temp !== null && m.temp !== undefined).map(m => Number(m.temp));
+      if (temps.length) {
+        const minM = Math.min(...temps);
+        const maxM = Math.max(...temps);
+        const avgM = temps.reduce((a, b) => a + b, 0) / temps.length;
+        document.getElementById('spreadMin').textContent = fmtTemp(minM);
+        document.getElementById('spreadAvg').textContent = fmtTemp(avgM);
+        document.getElementById('spreadMax').textContent = fmtTemp(maxM);
+        const span = Math.max(0.5, maxM - minM);
+        const avgPct = Math.max(5, Math.min(95, ((avgM - minM) / span) * 100));
+        document.getElementById('spreadAvgDot').style.left = `${avgPct}%`;
+        const tightCount = temps.filter(t => Math.abs(t - avgM) <= 0.8).length;
+        document.getElementById('consensusPctBadge').textContent =
+          `${Math.round((tightCount / temps.length) * 100)}% Consensus (${temps.length} Models)`;
+      } else {
+        document.getElementById('spreadMin').textContent = '--.-°';
+        document.getElementById('spreadAvg').textContent = '--.-°';
+        document.getElementById('spreadMax').textContent = '--.-°';
+        document.getElementById('consensusPctBadge').textContent = '0 Models';
+      }
 
-      document.getElementById('sevenDayBody').innerHTML = (d.daily || []).map(day => `
-        <tr class="tabular">
-          <td><strong>${day.day}</strong></td>
-          <td>${day.sky}</td>
-          <td>${fmtTemp(day.lowC, false)} / ${fmtTemp(day.highC, false)}</td>
-          <td style="color:var(--c-rain); font-weight:700;">${day.rainProb}%</td>
-        </tr>
-      `).join('');
+      document.getElementById('sevenDayBody').innerHTML = (d.daily || []).length
+        ? d.daily.map(day => `
+            <tr class="tabular">
+              <td><strong>${day.day}</strong></td>
+              <td>${day.sky}</td>
+              <td>${fmtTemp(day.lowC, false)} / ${fmtTemp(day.highC, false)}</td>
+              <td style="color:var(--c-rain); font-weight:700;">${day.rainProb}%</td>
+            </tr>
+          `).join('')
+        : '<tr><td colspan="4" class="muted">No 7-day forecast data yet</td></tr>';
 
-      document.getElementById('sunTimesTxt').textContent = `${d.sunrise} / ${d.sunset}`;
-      document.getElementById('solarNoonTxt').textContent = `${d.solarNoon} / ${d.goldenHour}`;
-      document.getElementById('moonPhaseBadge').textContent = d.moonPhase;
-      document.getElementById('moonMetaTxt').textContent = `${d.moonIllum}% • ${d.nextLunarEvent}`;
+      document.getElementById('sunTimesTxt').textContent = d.sunTimes || '05:56 AM / 05:24 PM';
+      document.getElementById('solarNoonTxt').textContent = `${fmtTemp(d.minT, false)} (${d.minTT || '--:--'}) / ${fmtTemp(d.maxT, false)} (${d.maxTT || '--:--'})`;
+      document.getElementById('moonMetaTxt').textContent = `${fmtTemp(d.peakHI)} @ ${d.peakHT || '--:--'} • -${Number(d.max1hDrop || 0).toFixed(2)} hPa/h`;
 
-      const spreadC = d.tempC - d.dewC;
+      const spreadC = (d.temp !== null && d.dew !== null) ? (Number(d.temp) - Number(d.dew)) : 3.0;
+      const estCloud = Math.max(5, Math.min(95, Math.round(Number(d.meanRainProb || 20) * 1.1)));
       const clarity = Math.max(0, Math.min(100, Math.round(
-        (100 - d.cloudCoverPct) * 0.6 +
-        Math.max(0, 100 - d.humPct) * 0.25 +
-        Math.min(15, Math.max(0, spreadC * 3))
+        (100 - estCloud) * 0.55 +
+        Math.max(0, 100 - Number(d.hum || 75)) * 0.25 +
+        Math.min(20, Math.max(0, spreadC * 3.5))
       )));
       document.getElementById('clarityScoreBadge').textContent = `${clarity} / 100`;
       document.getElementById('clarityBigNum').textContent = `${clarity}% Clear Sky`;
-      document.getElementById('clarityReasonTxt').textContent =
-        clarity >= 70
-          ? 'Clear sky window with low cloud interference for stargazing.'
-          : 'Cloud cover or elevated humidity reduces deep-sky contrast.';
-      const condRisk = (spreadC <= 2.0 && d.humPct >= 85) ? 'High Dew/Lens Risk' : (spreadC <= 3.5 ? 'Moderate Risk' : 'Low Risk');
-      document.getElementById('condensationRiskTxt').textContent = `${condRisk} (Spread ${spreadC.toFixed(1)}°C)`;
+      document.getElementById('clarityReasonTxt').textContent = d.earlyWarningDetail || 'Awaiting telemetry.';
+      document.getElementById('condensationRiskTxt').textContent = `${d.fogDew || '--'} (Spread ${spreadC.toFixed(1)}°C)`;
 
-      document.getElementById('issPassTxt').textContent = d.issPass;
-      document.getElementById('issElevTxt').textContent = d.issGeom;
+      const h = STATE.health;
+      const hostLabel = window.location.hostname || 'STA';
+      if (h) {
+        document.getElementById('espHealthBadge').textContent = h.bmeOk ? 'HEALTHY' : 'DEGRADED';
+        document.getElementById('espHealthBadge').className = h.bmeOk ? 'badge b-ok' : 'badge b-warn';
+        document.getElementById('hwChipTxt').textContent = `${h.chipModel || 'ESP32'} • ${h.flashSizeMb || 4}MB`;
+        document.getElementById('hwHeapTxt').textContent = `${((h.freeHeap || 0) / 1024).toFixed(1)} KB • ${Number(h.chipTempC || 0).toFixed(1)}°C`;
+        document.getElementById('hwWifiTxt').textContent = (h.wifiStatus === 3) ? `Slot #${(h.wifiSlot ?? 0) + 1} (${h.wifiRssi} dBm)` : `STA (${hostLabel})`;
+        document.getElementById('hwUptimeTxt').textContent = `${h.uptimeFmt || '--'} • ${h.resetReasonLabel || '--'}`;
+        document.getElementById('gapGuardTxt').textContent = `${h.bmeOk ? 'OK' : 'ERR'} @ ${h.bmeAddr || '0x76'} • ${h.i2cErrors || 0} err / ${h.bmeRecoveries || 0} rec`;
+        document.getElementById('nvsRecoveredTxt').textContent = `${h.histCount || 0} (10m) • ${h.log30Count || 0} (30m)`;
+        document.getElementById('diagMode').textContent = `${STATE.connMode} (${hostLabel})`;
+        document.getElementById('diagRssi').textContent = `${h.wifiRssi || '--'} dBm • ${h.uptimeFmt || '--'}`;
+        document.getElementById('diagHeap').textContent = `${((h.freeHeap || 0) / 1024).toFixed(1)} KB • ${h.resetReasonLabel || '--'}`;
+      } else {
+        document.getElementById('diagMode').textContent = `${STATE.connMode} (${hostLabel})`;
+      }
 
-      document.getElementById('nvsRecoveredTxt').textContent = `${d.nvsRecovered10m} (10m) • ${d.nvsRecovered30m} (30m)`;
-      document.getElementById('aiVaultTxt').textContent = `SGD Step #${d.aiSteps} • Calibrated`;
-      document.getElementById('diagMode').textContent = `${STATE.connMode} (${d.ipAddr})`;
-      document.getElementById('diagRssi').textContent = `${d.wifiRssi} dBm • ${d.uptimeStr}`;
-      document.getElementById('diagHeap').textContent = `${d.freeHeapKb} KB • ${d.resetReason}`;
+      const pOff = Number(d.pressOffset || 0);
+      document.getElementById('aiVaultTxt').textContent = `SGD Step #${d.aiSteps || 0} • Baro Off ${pOff >= 0 ? '+' : ''}${pOff.toFixed(2)} hPa`;
     }
 
     function openModelBreakdown() {
-      const rows = STATE.telemetry ? STATE.telemetry.models14 : [];
-      document.getElementById('modal14Body').innerHTML = rows.map(m => `
-        <tr class="tabular">
-          <td><strong>${m.name}</strong></td>
-          <td>${fmtTemp(m.tempC)}</td>
-          <td>${m.rainProb}%</td>
-          <td>${m.slpHpa.toFixed(1)} hPa</td>
-          <td>${m.match.toFixed(1)}%</td>
-        </tr>
-      `).join('');
+      const rows = (STATE.telemetry && STATE.telemetry.models14) ? STATE.telemetry.models14 : [];
+      document.getElementById('modal14Body').innerHTML = rows.length
+        ? rows.map(m => {
+            const tStr = (m.validTemp !== false && m.temp !== null && m.temp !== undefined) ? fmtTemp(m.temp) : '--';
+            const rStr = (m.validRain !== false && m.rainProb !== null && m.rainProb !== undefined) ? `${Math.round(m.rainProb)}%` : '--';
+            const pStr = (m.validSlp !== false && m.slp !== null && m.slp !== undefined) ? `${Number(m.slp).toFixed(1)} hPa` : '--';
+            const maeStr = (m.mae !== null && m.mae !== undefined && !Number.isNaN(Number(m.mae)))
+              ? `${(STATE.unit === 'F' ? Number(m.mae) * 1.8 : Number(m.mae)).toFixed(2)}°${STATE.unit}`
+              : '--';
+            return `
+              <tr class="tabular">
+                <td><strong>${m.name}</strong></td>
+                <td>${tStr}</td>
+                <td>${rStr}</td>
+                <td>${pStr}</td>
+                <td>${Number(m.weight || 0).toFixed(3)}</td>
+                <td>${maeStr}</td>
+              </tr>
+            `;
+          }).join('')
+        : '<tr><td colspan="6" class="muted">No model comparison rows available yet.</td></tr>';
       document.getElementById('modelBackdrop').classList.add('open');
     }
     function closeModelBreakdown() {
@@ -902,36 +1081,127 @@
     function closeConfigSheet() {
       document.getElementById('configBackdrop').classList.remove('open');
     }
-    function unlockConfig() {
-      if (document.getElementById('pinInput').value === '1234') {
-        document.getElementById('pinGate').style.display = 'none';
-        document.getElementById('configUnlocked').style.display = 'block';
-      } else {
+
+    async function unlockConfig() {
+      if (document.getElementById('pinInput').value !== '1234') {
         alert('Invalid PIN (default: 1234)');
+        return;
       }
+      document.getElementById('pinGate').style.display = 'none';
+      document.getElementById('configUnlocked').style.display = 'block';
+      document.getElementById('cfgInterval').value = String(STATE.pollMs);
+      document.getElementById('cfgCloudUrl').value = STATE.cloudRelayUrl;
+      document.getElementById('cfgAdvisoryFeedUrl').value = STATE.advisoryFeedUrl;
+      document.getElementById('cfgIncludeSignal').value = STATE.includeSensorSignal ? '1' : '0';
+
+      try {
+        const res = await fetch('/api/config');
+        if (res.ok) {
+          const cfg = await res.json();
+          if (cfg.tOff !== undefined) document.getElementById('cfgTOff').value = cfg.tOff;
+          if (cfg.hOff !== undefined) document.getElementById('cfgHOff').value = cfg.hOff;
+          if (cfg.pOff !== undefined) document.getElementById('cfgPOff').value = cfg.pOff;
+          if (cfg.elev !== undefined) document.getElementById('cfgElev').value = cfg.elev;
+          if (cfg.hThr !== undefined) document.getElementById('cfgHThr').value = cfg.hThr;
+          if (cfg.pThr !== undefined) document.getElementById('cfgPThr').value = cfg.pThr;
+          if (cfg.rThr !== undefined) document.getElementById('cfgRThr').value = cfg.rThr;
+          if (cfg.ssid) document.getElementById('cfgSsid1').value = cfg.ssid;
+          if (cfg.ssid2) document.getElementById('cfgSsid2').value = cfg.ssid2;
+          if (cfg.ssid3) document.getElementById('cfgSsid3').value = cfg.ssid3;
+          if (cfg.tgTok) document.getElementById('cfgTgTok').value = cfg.tgTok;
+          if (cfg.tgChat) document.getElementById('cfgTgChat').value = cfg.tgChat;
+          if (cfg.wuId) document.getElementById('cfgWuId').value = cfg.wuId;
+          if (cfg.tsKey) document.getElementById('cfgTsKey').value = cfg.tsKey;
+          if (cfg.dcUrl) document.getElementById('cfgCloudUrl').value = cfg.dcUrl;
+          if (cfg.telSec) {
+            const ms = Number(cfg.telSec) * 1000;
+            if ([15000, 30000, 60000, 300000].includes(ms)) {
+              document.getElementById('cfgInterval').value = String(ms);
+            }
+          }
+        }
+      } catch (_) {}
     }
-    function saveConfigSheet() {
+
+    async function saveConfigSheet() {
+      STATE.advisoryFeedUrl = document.getElementById('cfgAdvisoryFeedUrl').value.trim();
+      STATE.includeSensorSignal = document.getElementById('cfgIncludeSignal').value === '1';
       STATE.cloudRelayUrl = document.getElementById('cfgCloudUrl').value.trim();
       STATE.pollMs = parseInt(document.getElementById('cfgInterval').value, 10) || 60000;
+
+      localStorage.setItem('jl_advisory_feed_url', STATE.advisoryFeedUrl);
+      localStorage.setItem('jl_include_signal', STATE.includeSensorSignal ? '1' : '0');
       localStorage.setItem('jl_cloud_url', STATE.cloudRelayUrl);
-      alert('Configuration saved. Remote cloud relay & polling interval updated.');
+      localStorage.setItem('jl_poll_ms', String(STATE.pollMs));
+      restartPolling();
+
+      const body = new URLSearchParams();
+      body.set('tOff', document.getElementById('cfgTOff').value);
+      body.set('hOff', document.getElementById('cfgHOff').value);
+      body.set('pOff', document.getElementById('cfgPOff').value);
+      body.set('elev', document.getElementById('cfgElev').value);
+      body.set('hThr', document.getElementById('cfgHThr').value);
+      body.set('pThr', document.getElementById('cfgPThr').value);
+      body.set('rThr', document.getElementById('cfgRThr').value);
+      body.set('ssid', document.getElementById('cfgSsid1').value.trim());
+      const p1 = document.getElementById('cfgPass1').value;
+      if (p1) body.set('pass', p1);
+      body.set('ssid2', document.getElementById('cfgSsid2').value.trim());
+      const p2 = document.getElementById('cfgPass2').value;
+      if (p2) body.set('pass2', p2);
+      body.set('ssid3', document.getElementById('cfgSsid3').value.trim());
+      const p3 = document.getElementById('cfgPass3').value;
+      if (p3) body.set('pass3', p3);
+      body.set('tgTok', document.getElementById('cfgTgTok').value.trim());
+      body.set('tgChat', document.getElementById('cfgTgChat').value.trim());
+      body.set('wuId', document.getElementById('cfgWuId').value.trim());
+      body.set('tsKey', document.getElementById('cfgTsKey').value.trim());
+      if (STATE.cloudRelayUrl.includes('discord.com/api/webhooks')) {
+        body.set('dcUrl', STATE.cloudRelayUrl);
+      } else {
+        body.set('whUrl', STATE.cloudRelayUrl);
+      }
+      body.set('telSec', String(Math.max(30, Math.round(STATE.pollMs / 1000))));
+
+      try {
+        await fetch('/config', { method: 'POST', body });
+        alert('Configuration saved.');
+      } catch (_) {
+        alert('Saved browser & feed configuration.');
+      }
       closeConfigSheet();
+      refreshAll(true);
     }
+
     function softRebootEsp() {
       if (!confirm('Send Soft Reboot command to ESP32?')) return;
-      fetch(`${ESP32_BASE_URL}/api/reboot`, { method: 'POST' }).catch(() => {});
+      fetch('/api/reboot', { method: 'POST' }).catch(() => {});
       alert('Soft reboot requested.');
       closeConfigSheet();
     }
 
+    function syncDeviceClock() {
+      const ep = Math.floor(Date.now() / 1000);
+      fetch('/sync?epoch=' + ep)
+        .then(() => refreshAll(true))
+        .catch(() => {});
+    }
+
+    function handleCsvExportClick(ev) {
+      if (STATE.connMode === 'STA') return true;
+      ev.preventDefault();
+      exportDataset('csv');
+      return false;
+    }
+
     function exportDataset(kind) {
-      const d = STATE.telemetry || MOCK_TELEMETRY;
+      const d = STATE.telemetry || BASELINE_TELEMETRY;
       if (kind === 'json') {
-        const blob = new Blob([JSON.stringify(d, null, 2)], { type: 'application/json' });
+        const blob = new Blob([JSON.stringify({ telemetry: d, advisories: getCombinedAlerts(d) }, null, 2)], { type: 'application/json' });
         downloadBlob(blob, 'juan_lookout_ai_dataset.json');
       } else {
-        const rows = ['timestamp,station,temp_c,hum_pct,dew_c,slp_hpa,synced_model,sensor_match_pct'];
-        rows.push(`${new Date().toISOString()},"${d.stationName}",${d.tempC},${d.humPct},${d.dewC},${d.slpHpa},"${d.syncedModel}",${d.sensorMatchPct}`);
+        const rows = ['timestamp,station,temp_c,hum_pct,dew_c,slp_hpa,corr_p_hpa,ai_next_temp_c,ai_steps'];
+        rows.push(`${new Date().toISOString()},"${d.stationName}",${d.temp ?? ''},${d.hum ?? ''},${d.dew ?? ''},${d.slp ?? ''},${d.corrP ?? ''},${d.aiNextTemp ?? ''},${d.aiSteps || 0}`);
         const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
         downloadBlob(blob, 'juan_lookout_ai_dataset.csv');
       }
@@ -945,26 +1215,30 @@
       URL.revokeObjectURL(url);
     }
 
-    async function refreshAll(force = false) {
+    async function fetchHealthIfAvailable() {
+      try {
+        const res = await fetch('/api/health');
+        if (res.ok) STATE.health = await res.json();
+      } catch (_) {}
+    }
+
+    async function refreshAll() {
+      await Promise.all([fetchHealthIfAvailable(), fetchExternalAdvisories()]);
+      const nowTime = new Date().toLocaleTimeString();
+
       try {
         const ctrl = new AbortController();
-        const tid = setTimeout(() => ctrl.abort(), 2200);
-        const res = await fetch(`${ESP32_BASE_URL}/api/sensors`, { signal: ctrl.signal });
+        const tid = setTimeout(() => ctrl.abort(), 2400);
+        const res = await fetch('/api/sensors', { signal: ctrl.signal });
         clearTimeout(tid);
         if (res.ok) {
           const raw = await res.json();
-          STATE.connMode = 'LAN';
+          STATE.connMode = 'STA';
           STATE.telemetry = {
-            ...MOCK_TELEMETRY,
-            stationName: raw.locationName || MOCK_TELEMETRY.stationName,
-            tempC: typeof raw.temp === 'number' ? raw.temp : MOCK_TELEMETRY.tempC,
-            humPct: typeof raw.hum === 'number' ? raw.hum : MOCK_TELEMETRY.humPct,
-            dewC: typeof raw.dew === 'number' ? raw.dew : MOCK_TELEMETRY.dewC,
-            hiC: typeof raw.hi === 'number' ? raw.hi : MOCK_TELEMETRY.hiC,
-            slpHpa: typeof raw.slp === 'number' ? raw.slp : MOCK_TELEMETRY.slpHpa,
-            d3hP: typeof raw.d3hP === 'number' ? raw.d3hP : MOCK_TELEMETRY.d3hP,
-            aiSteps: raw.aiSteps ?? MOCK_TELEMETRY.aiSteps,
-            syncedTs: new Date().toLocaleTimeString()
+            ...BASELINE_TELEMETRY,
+            ...raw,
+            stationName: raw.locationName || BASELINE_TELEMETRY.stationName,
+            syncedTs: nowTime
           };
           renderAll(STATE.telemetry);
           return;
@@ -976,7 +1250,7 @@
             if (cRes.ok) {
               const cData = await cRes.json();
               STATE.connMode = 'CLOUD';
-              STATE.telemetry = { ...MOCK_TELEMETRY, ...cData, syncedTs: new Date().toLocaleTimeString() };
+              STATE.telemetry = { ...BASELINE_TELEMETRY, ...cData, syncedTs: nowTime };
               renderAll(STATE.telemetry);
               return;
             }
@@ -984,14 +1258,19 @@
         }
       }
 
-      STATE.connMode = STATE.cloudRelayUrl ? 'CLOUD (CACHED)' : 'LAN / DEMO';
-      STATE.telemetry = { ...MOCK_TELEMETRY, syncedTs: new Date().toLocaleTimeString() };
+      STATE.connMode = STATE.cloudRelayUrl ? 'CLOUD' : 'STA (WAITING)';
+      STATE.telemetry = { ...BASELINE_TELEMETRY, syncedTs: nowTime };
       renderAll(STATE.telemetry);
+    }
+
+    function restartPolling() {
+      if (STATE.pollTimer) clearInterval(STATE.pollTimer);
+      STATE.pollTimer = setInterval(() => refreshAll(false), STATE.pollMs);
     }
 
     applyThemeMode();
     refreshAll(true);
-    setInterval(() => refreshAll(false), STATE.pollMs);
+    restartPolling();
   </script>
 </body>
 </html>
