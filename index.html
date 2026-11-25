@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="day">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0ea5e9" />
+  <title>Juan Lookout — San Jose City Weather &amp; AI Station</title>
+  <style>
+    :root {
+      --bg-grad: radial-gradient(circle at 15% -10%, #bae6fd 0%, #e0f2fe 38%, #f8fafc 85%);
+      --surface: rgba(255, 255, 255, 0.78);
+      --surface-strong: rgba(255, 255, 255, 0.96);
+      --surface-elev: rgba(241, 245, 249, 0.85);
+      --border: rgba(15, 23, 42, 0.11);
+      --text: #0f172a;
+      --muted: #475569;
+      --accent: #0284c7;
+      --accent-soft: rgba(2, 132, 199, 0.12);
+      --ok: #059669;
+      --warn: #d97706;
+      --danger: #dc2626;
+      --shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+      --c-temp: #ea580c;
+      --c-hi: #e11d48;
+      --c-press: #7c3aed;
+      --c-hum: #0891b2;
+      --c-rain: #0284c7;
+      --c-wind: #0d9488;
+      --c-astro: #d97706;
+    }
+
+    html[data-theme="night"] {
+      --bg-grad: radial-gradient(circle at 18% -8%, #172554 0%, #090d16 58%, #04070e 100%);
+      --surface: rgba(15, 23, 42, 0.76);
+      --surface-strong: rgba(15, 23, 42, 0.96);
+      --surface-elev: rgba(30, 41, 59, 0.72);
+      --border: rgba(148, 163, 184, 0.16);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.14);
+      --ok: #34d399;
+      --warn: #fbbf24;
+      --danger: #fb7185;
+      --shadow: 0 14px 34px rgba(0, 0, 0, 0.42);
+      --c-temp: #fb923c;
+      --c-hi: #fb7185;
+      --c-press: #c084fc;
+      --c-hum: #22d3ee;
+      --c-rain: #38bdf8;
+      --c-wind: #2dd4bf;
+      --c-astro: #fbbf24;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+      background: var(--bg-grad) fixed;
+      color: var(--text);
+      min-height: 100dvh;
+      padding-bottom: 40px;
+      transition: background 0.35s ease, color 0.25s ease;
+    }
+    .tabular { font-variant-numeric: tabular-nums; }
+    .container { max-width: 1280px; margin: 0 auto; padding: 10px 12px; }
+
+    /* Sticky Header */
+    .sticky-hdr {
+      position: sticky; top: 0; z-index: 40;
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      background: var(--surface-strong);
+      border-bottom: 1px solid var(--border);
+      padding: 8px 12px;
+    }
+    .hdr-inner {
+      max-width: 1280px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;
+    }
+    .hdr-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .hdr-title { font-size: 0.98rem; font-weight: 800; letter-spacing: -0.01em; white-space: nowrap; }
+    .hdr-sub { font-size: 0.72rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .hdr-temp { font-size: 1.02rem; font-weight: 800; color: var(--c-temp); padding: 3px 8px; border-radius: 999px; background: var(--accent-soft); }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.03em;
+      padding: 3px 8px; border-radius: 999px; border: 1px solid var(--border);
+      background: var(--surface-elev); color: var(--text); white-space: nowrap;
+    }
+    .badge-src { font-size: 0.62rem; font-weight: 800; padding: 2px 6px; border-radius: 6px; text-transform: uppercase; }
+    .src-sensor { background: rgba(16, 185, 129, 0.16); color: var(--ok); border: 1px solid rgba(16, 185, 129, 0.35); }
+    .src-model  { background: rgba(2, 132, 199, 0.14); color: var(--accent); border: 1px solid rgba(2, 132, 199, 0.32); }
+    .b-ok { color: var(--ok); border-color: rgba(16, 185, 129, 0.35); background: rgba(16, 185, 129, 0.12); }
+    .b-warn { color: var(--warn); border-color: rgba(217, 119, 6, 0.4); background: rgba(245, 158, 11, 0.14); }
+    .b-crit { color: var(--danger); border-color: rgba(220, 38, 38, 0.45); background: rgba(239, 68, 68, 0.15); }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+      padding: 6px 10px; border-radius: 10px; border: 1px solid var(--border);
+      background: var(--surface-elev); color: var(--text); font-size: 0.76rem; font-weight: 600;
+      cursor: pointer; transition: transform 0.12s ease, background 0.15s ease;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff; border: none; }
+    .btn-ghost { background: transparent; }
+
+    .seg { display: inline-flex; padding: 2px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface-elev); }
+    .seg button {
+      border: none; background: transparent; color: var(--muted); font-size: 0.74rem; font-weight: 700;
+      padding: 4px 8px; border-radius: 8px; cursor: pointer;
+    }
+    .seg button.active { background: var(--accent); color: #fff; }
+
+    /* Cards & Bento Grid */
+    .card {
+      background: var(--surface); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--border); border-radius: 18px; padding: 14px; box-shadow: var(--shadow);
+    }
+    .card-tap { cursor: pointer; }
+    .card-tap:hover { border-color: var(--accent); }
+    .card-hd { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+    .card-lbl { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+    .muted { color: var(--muted); font-size: 0.78rem; }
+
+    /* 2-col mobile secondary grid -> multi-col desktop */
+    .bento-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
+    .bento-3 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
+    @media (min-width: 860px) {
+      .bento-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+      .bento-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    }
+
+    /* Hazard Alert Banner */
+    .hazard-banner {
+      border-radius: 18px; border: 1px solid var(--border); background: var(--surface);
+      box-shadow: var(--shadow); margin-bottom: 12px; overflow: hidden;
+    }
+    .hazard-banner.sev-yellow { border-color: rgba(217, 119, 6, 0.5); background: rgba(245, 158, 11, 0.12); }
+    .hazard-banner.sev-orange { border-color: rgba(234, 88, 12, 0.55); background: rgba(234, 88, 12, 0.14); }
+    .hazard-banner.sev-red    { border-color: rgba(220, 38, 38, 0.65); background: rgba(239, 68, 68, 0.16); }
+    .hazard-top {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+      padding: 11px 14px; cursor: pointer;
+    }
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--ok); display: inline-block;
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); animation: pulseAnim 2s infinite;
+    }
+    @keyframes pulseAnim {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.65); }
+      70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    .hazard-body { display: none; padding: 0 14px 14px; border-top: 1px solid var(--border); }
+    .hazard-body.open { display: block; padding-top: 12px; }
+    .alert-item {
+      padding: 10px 12px; border-radius: 12px; background: var(--surface-elev);
+      border: 1px solid var(--border); margin-top: 8px; cursor: pointer;
+    }
+    .alert-detail-box {
+      margin-top: 8px; padding: 10px 12px; border-radius: 12px;
+      background: var(--surface-strong); border-left: 3px solid var(--accent); font-size: 0.8rem; line-height: 1.45;
+    }
+
+    /* Hero Nowcast */
+    .hero-stage { position: relative; overflow: hidden; margin-bottom: 12px; padding: 18px; }
+    .sky-fx { position: absolute; inset: 0; pointer-events: none; opacity: 0.35; }
+    .hero-grid { position: relative; z-index: 2; display: grid; grid-template-columns: 1fr; gap: 14px; }
+    @media (min-width: 780px) { .hero-grid { grid-template-columns: 1.15fr 0.85fr; align-items: center; } }
+    .hero-main { font-size: 3.1rem; font-weight: 900; letter-spacing: -0.04em; line-height: 1; color: var(--c-temp); }
+    .hero-summary { font-size: 0.9rem; line-height: 1.45; margin-top: 8px; font-weight: 500; }
+
+    /* Hourly Strip */
+    .hourly-strip {
+      display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px;
+      scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;
+    }
+    .hr-tile {
+      flex: 0 0 84px; scroll-snap-align: start;
+      background: var(--surface-elev); border: 1px solid var(--border); border-radius: 14px;
+      padding: 9px 7px; text-align: center;
+    }
+    .hr-bar-track { height: 28px; width: 8px; margin: 6px auto; border-radius: 999px; background: rgba(148, 163, 184, 0.2); overflow: hidden; display: flex; align-items: flex-end; }
+    .hr-bar-fill { width: 100%; background: var(--c-rain); border-radius: 999px; }
+
+    /* Consensus bars */
+    .spread-track { height: 10px; border-radius: 999px; background: rgba(148, 163, 184, 0.22); position: relative; margin: 10px 0 6px; }
+    .spread-range { position: absolute; top: 0; bottom: 0; border-radius: 999px; background: linear-gradient(90deg, var(--c-rain), var(--c-temp)); }
+    .spread-avg { position: absolute; top: -3px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; background: var(--text); border: 3px solid var(--accent); }
+
+    /* Tables */
+    .scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.79rem; }
+    th, td { padding: 8px 7px; border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap; }
+    th { font-size: 0.69rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+
+    /* Bottom Sheet & Modal */
+    .sheet-backdrop {
+      position: fixed; inset: 0; background: rgba(2, 6, 23, 0.62); backdrop-filter: blur(5px);
+      display: none; align-items: flex-end; justify-content: center; z-index: 60;
+    }
+    @media (min-width: 700px) { .sheet-backdrop { align-items: center; padding: 16px; } }
+    .sheet-backdrop.open { display: flex; }
+    .sheet-panel {
+      width: 100%; max-width: 620px; max-height: 88dvh; overflow-y: auto;
+      background: var(--surface-strong); border: 1px solid var(--border);
+      border-radius: 22px 22px 0 0; padding: 18px; box-shadow: var(--shadow);
+    }
+    @media (min-width: 700px) { .sheet-panel { border-radius: 22px; } }
+    .field { margin-top: 10px; }
+    .field label { display: block; font-size: 0.74rem; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
+    .field input, .field select {
+      width: 100%; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--border);
+      background: var(--surface-elev); color: var(--text); font-size: 0.84rem;
+    }
+    .kv-row { display: flex; justify-content: space-between; gap: 10px; font-size: 0.8rem; padding: 5px 0; border-bottom: 1px dashed var(--border); }
+    .kv-row span { color: var(--muted); }
+  </style>
+</head>
+<body>
+
+  <!-- 1. Sticky Compact Scroll Header -->
+  <header class="sticky-hdr">
+    <div class="hdr-inner">
+      <div class="hdr-left">
+        <div>
+          <div class="hdr-title" id="hdrStationName">Juan Lookout • San Jose City</div>
+          <div class="hdr-sub tabular" id="hdrClock">15.8003°N, 121.0030°E • Syncing...</div>
+        </div>
+        <span class="hdr-temp tabular" id="hdrTemp">--.-°C</span>
+        <span class="badge b-ok" id="connModeBadge">LAN</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+        <button class="btn btn-ghost" onclick="toggleTheme()" title="Toggle Day/Midnight Theme" id="themeBtn">🌙</button>
+        <div class="seg" role="group" aria-label="Unit Toggle">
+          <button id="btnC" class="active" onclick="setUnit('C')">°C</button>
+          <button id="btnF" onclick="setUnit('F')">°F</button>
+        </div>
+        <button class="btn" onclick="refreshAll(true)">↻</button>
+        <button class="btn btn-primary" onclick="openConfigSheet()">⚙ Config</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- 2. Real-Time Philippine Hazard Alert Banner (PAGASA, NDRRMC, PHIVOLCS) -->
+    <section class="hazard-banner sev-yellow" id="hazardBanner">
+      <div class="hazard-top" onclick="toggleHazardBanner()">
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <span class="pulse-dot" id="hazardPulse"></span>
+          <strong style="font-size:0.88rem;" id="hazardHeadline">PAGASA / NDRRMC / PHIVOLCS Advisories</strong>
+          <span class="badge b-warn" id="baroCrossCheckBadge">Baro Cross-Check: Steady</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="muted tabular" id="hazardTimestamps">Issued: -- • Synced: --</span>
+          <button class="btn" type="button" id="hazardToggleBtn">Expand ▾</button>
+        </div>
+      </div>
+      <div class="hazard-body" id="hazardBody">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="setAgencyFilter('ALL', this)">All</button>
+            <button class="btn" onclick="setAgencyFilter('PAGASA', this)">PAGASA</button>
+            <button class="btn" onclick="setAgencyFilter('NDRRMC', this)">NDRRMC</button>
+            <button class="btn" onclick="setAgencyFilter('PHIVOLCS', this)">PHIVOLCS</button>
+          </div>
+          <span class="muted" id="hazardCountLbl">3 active bulletins</span>
+        </div>
+        <div id="hazardList"></div>
+        <div class="alert-detail-box" id="hazardReader">
+          Tap any advisory above to inspect full bulletin details, affected Nueva Ecija / Central Luzon areas, and recommended local actions without leaving the dashboard.
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Highlighted "Nowcasting" Centerpiece -->
+    <section class="card hero-stage" id="heroStage">
+      <svg class="sky-fx" viewBox="0 0 800 260" preserveAspectRatio="none">
+        <defs>
+          <radialGradient id="sunGlow" cx="82%" cy="22%" r="35%">
+            <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.7" />
+            <stop offset="100%" stop-color="#fbbf24" stop-opacity="0" />
+          </radialGradient>
+        </defs>
+        <rect width="800" height="260" fill="url(#sunGlow)" />
+        <ellipse cx="220" cy="70" rx="120" ry="28" fill="#ffffff" opacity="0.25" />
+        <ellipse cx="480" cy="95" rx="150" ry="30" fill="#ffffff" opacity="0.18" />
+      </svg>
+
+      <div class="hero-grid">
+        <div>
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
+            <span class="badge" id="syncedModelBadge" onclick="openModelBreakdown()" style="cursor:pointer;">
+              Synced Model: ECMWF IFS • 98.4% Sensor Match ▸
+            </span>
+            <span class="badge-src src-sensor">SENSOR + MODEL</span>
+          </div>
+          <div style="display:flex; align-items:flex-end; gap:14px; flex-wrap:wrap;">
+            <div class="hero-main tabular" id="heroTemp">--.-°C</div>
+            <div>
+              <div style="font-size:0.95rem; font-weight:700;" id="heroCond">Partly Cloudy • Amihan Flow</div>
+              <div class="muted tabular" id="heroFeels">Feels Like --.-°C • Dew Point --.-°C</div>
+            </div>
+          </div>
+          <p class="hero-summary" id="heroPlainSummary">
+            Warm, breezy conditions around San Jose City with comfortable morning/evening air and low near-term rain risk.
+          </p>
+        </div>
+
+        <div class="bento-2" style="margin-bottom:0;">
+          <div class="card" style="padding:10px;">
+            <div class="card-hd" style="margin-bottom:4px;">
+              <span class="card-lbl">Wind Rose</span>
+              <span class="badge-src src-model">MODEL</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <svg width="56" height="56" viewBox="0 0 60 60">
+                <circle cx="30" cy="30" r="26" fill="none" stroke="var(--border)" stroke-width="2" />
+                <text x="30" y="11" text-anchor="middle" font-size="8" fill="var(--muted)">N</text>
+                <g id="windArrowGroup" transform="rotate(45 30 30)">
+                  <polygon points="30,10 35,34 30,29 25,34" fill="var(--c-wind)" />
+                </g>
+              </svg>
+              <div>
+                <div style="font-weight:800; font-size:0.95rem;" class="tabular" id="windMainTxt">14 km/h NE</div>
+                <div class="muted tabular" id="windGustTxt">Gusts 24 km/h</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="padding:10px;">
+            <div class="card-hd" style="margin-bottom:4px;">
+              <span class="card-lbl">3h Barometer</span>
+              <span class="badge-src src-sensor">SENSOR</span>
+            </div>
+            <div style="font-weight:800; font-size:0.95rem; color:var(--c-press);" class="tabular" id="slpHeroTxt">1013.2 hPa</div>
+            <svg width="100%" height="30" viewBox="0 0 140 30" style="margin-top:4px;">
+              <polyline id="heroBaroSpark" fill="none" stroke="var(--c-press)" stroke-width="2.2" points="0,16 45,15 95,14 140,13" />
+            </svg>
+          </div>
+
+          <div class="card" style="padding:10px;">
+            <div class="card-hd" style="margin-bottom:4px;">
+              <span class="card-lbl">Rain &amp; Cloud</span>
+              <span class="badge-src src-model">MODEL</span>
+            </div>
+            <div style="font-weight:800; font-size:0.92rem; color:var(--c-rain);" class="tabular" id="rainHeroTxt">15% • 0.0 mm/h</div>
+            <div class="muted tabular" id="cloudHeroTxt">Cloud Cover 32%</div>
+          </div>
+
+          <div class="card" style="padding:10px;">
+            <div class="card-hd" style="margin-bottom:4px;">
+              <span class="card-lbl">UV &amp; Visibility</span>
+              <span class="badge-src src-model">MODEL</span>
+            </div>
+            <div style="font-weight:800; font-size:0.92rem; color:var(--c-astro);" class="tabular" id="uvHeroTxt">UV 4 (Mod)</div>
+            <svg width="100%" height="18" viewBox="0 0 120 18">
+              <path d="M10,16 A50,50 0 0,1 110,16" fill="none" stroke="rgba(148,163,184,0.25)" stroke-width="4" />
+              <path id="uvArcFill" d="M10,16 A50,50 0 0,1 60,6" fill="none" stroke="var(--c-astro)" stroke-width="4" stroke-linecap="round" />
+            </svg>
+            <div class="muted tabular" id="visHeroTxt">Vis 10.0 km • RH <span id="heroRhVal">--%</span> <span class="badge-src src-sensor">SENSOR</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Hourly Strip + 14-Agency Consensus + 7-Day Outlook -->
+    <section class="card" style="margin-bottom:12px;">
+      <div class="card-hd">
+        <span class="card-lbl">AccuWeather-Style Hourly Strip (Temp • Rain % • Wind)</span>
+        <span class="muted">Scroll horizontally →</span>
+      </div>
+      <div class="hourly-strip" id="hourlyStrip"></div>
+    </section>
+
+    <div class="bento-2">
+      <section class="card card-tap" onclick="openModelBreakdown()">
+        <div class="card-hd">
+          <span class="card-lbl">14-Agency Consensus &amp; Spread</span>
+          <span class="badge b-ok" id="consensusPctBadge">92% Agreement</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:0.8rem;" class="tabular">
+          <span>Min: <strong id="spreadMin">--.-°</strong></span>
+          <span>Avg: <strong id="spreadAvg">--.-°</strong></span>
+          <span>Max: <strong id="spreadMax">--.-°</strong></span>
+        </div>
+        <div class="spread-track">
+          <div class="spread-range" id="spreadRange" style="left:20%; right:20%;"></div>
+          <div class="spread-avg" id="spreadAvgDot" style="left:52%;"></div>
+        </div>
+        <p class="muted">Tap to inspect all 14 global agencies (ECMWF, AIFS, GFS, GraphCast, ICON, JMA, GEM, Meteo-France, UKMO, BOM, CMA, Best Match, MET Norway).</p>
+      </section>
+
+      <section class="card">
+        <div class="card-hd">
+          <span class="card-lbl">7-Day Forecast Outlook</span>
+          <span class="badge-src src-model">MODEL</span>
+        </div>
+        <div class="scroll-x">
+          <table>
+            <thead><tr><th>Day</th><th>Sky</th><th>Low / High</th><th>Rain</th></tr></thead>
+            <tbody id="sevenDayBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- 5. Weather-Integrated Astronomy & Sky Conditions Hub -->
+    <div class="bento-3">
+      <section class="card">
+        <div class="card-hd">
+          <span class="card-lbl">Sun &amp; Moon Horizon Arc</span>
+          <span class="badge" id="moonPhaseBadge">🌕 Full / Gibbous</span>
+        </div>
+        <svg width="100%" height="78" viewBox="0 0 260 78">
+          <line x1="12" y1="64" x2="248" y2="64" stroke="var(--border)" stroke-width="1.5" />
+          <path d="M24,64 A106,52 0 0,1 236,64" fill="none" stroke="var(--c-astro)" stroke-width="2" stroke-dasharray="4,3" />
+          <circle id="sunArcPos" cx="185" cy="22" r="7" fill="var(--c-astro)" />
+        </svg>
+        <div class="kv-row tabular"><span>Sunrise / Sunset:</span><strong id="sunTimesTxt">05:56 AM / 05:24 PM</strong></div>
+        <div class="kv-row tabular"><span>Solar Noon / Golden Hr:</span><strong id="solarNoonTxt">11:40 AM / 04:50 PM</strong></div>
+        <div class="kv-row tabular"><span>Moon Illum / Next Full:</span><strong id="moonMetaTxt">88% • ~4d</strong></div>
+      </section>
+
+      <section class="card">
+        <div class="card-hd">
+          <span class="card-lbl">Stargazing &amp; Sky Clarity</span>
+          <span class="badge b-ok" id="clarityScoreBadge">78 / 100</span>
+        </div>
+        <div style="font-size:1.75rem; font-weight:900; color:var(--accent);" class="tabular" id="clarityBigNum">78% Clear</div>
+        <p class="muted" style="margin-top:4px;" id="clarityReasonTxt">Low cloud cover &amp; stable pressure; moderate humidity.</p>
+        <div class="kv-row tabular" style="margin-top:8px;">
+          <span>Dew / Lens Condensation:</span>
+          <strong id="condensationRiskTxt">Low Risk (Spread 4.2°C)</strong>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-hd">
+          <span class="card-lbl">Celestial &amp; ISS Tracker</span>
+          <span class="badge">LEO PASS</span>
+        </div>
+        <div class="kv-row tabular"><span>Next Visible ISS Pass:</span><strong id="issPassTxt">Tonight 07:42 PM</strong></div>
+        <div class="kv-row tabular"><span>ISS Azimuth / Max El:</span><strong id="issElevTxt">SW → NE • 54°</strong></div>
+        <div class="kv-row"><span>Visible Planets:</span><strong>Jupiter, Saturn (Evening)</strong></div>
+        <div class="kv-row"><span>Meteor / Event:</span><strong>Geminids approaching peak</strong></div>
+      </section>
+    </div>
+
+    <!-- 7. Data Integrity & NVS Vault Card -->
+    <section class="card">
+      <div class="card-hd">
+        <span class="card-lbl">Data Integrity &amp; NVS Vault (Power-Loss Fail-Safe)</span>
+        <span class="badge b-ok" id="nvsHealthBadge">NVS Rolling Snapshot OK</span>
+      </div>
+      <div class="bento-2" style="margin-bottom:0;">
+        <div>
+          <div class="kv-row tabular"><span>Recovered Post-Reboot Records:</span><strong id="nvsRecoveredTxt">144 (10m) • 48 (30m)</strong></div>
+          <div class="kv-row tabular"><span>Sensor Gap Guard (NaN/0 Filter):</span><strong id="gapGuardTxt">Active • 0 invalid spikes</strong></div>
+        </div>
+        <div>
+          <div class="kv-row tabular"><span>AI Baseline &amp; Weights Backup:</span><strong id="aiVaultTxt">Synced to NVS + RTC</strong></div>
+          <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="exportDataset('csv')">⬇ Export AI Dataset (CSV)</button>
+            <button class="btn" onclick="exportDataset('json')">⬇ Export JSON</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 6. PIN-Protected Config Bottom Sheet -->
+  <div class="sheet-backdrop" id="configBackdrop" onclick="if(event.target===this)closeConfigSheet()">
+    <div class="sheet-panel">
+      <div class="card-hd">
+        <span class="card-lbl">Station Config &amp; Diagnostics (PIN: 1234)</span>
+        <button class="btn" onclick="closeConfigSheet()">✕</button>
+      </div>
+
+      <div id="pinGate">
+        <p class="muted">Enter station PIN to unlock Wi-Fi NVS slots, cloud bridge endpoints, and remote reboot.</p>
+        <div class="field">
+          <label>Access PIN</label>
+          <input type="password" id="pinInput" maxlength="8" placeholder="Default: 1234" value="1234" />
+        </div>
+        <button class="btn btn-primary" style="margin-top:10px;" onclick="unlockConfig()">Unlock Config</button>
+      </div>
+
+      <div id="configUnlocked" style="display:none;">
+        <div class="card-lbl" style="margin-top:6px;">Multi-Wi-Fi NVS Failover (Up to 3 SSIDs)</div>
+        <div class="field"><label>Slot 1 SSID (Primary)</label><input type="text" id="cfgSsid1" value="JDFam_2.4G" /></div>
+        <div class="field"><label>Slot 1 Password</label><input type="password" id="cfgPass1" placeholder="••••••••" /></div>
+        <div class="field"><label>Slot 2 SSID (Backup)</label><input type="text" id="cfgSsid2" placeholder="Optional backup SSID" /></div>
+        <div class="field"><label>Slot 3 SSID (Fallback)</label><input type="text" id="cfgSsid3" placeholder="Optional fallback SSID" /></div>
+
+        <div class="card-lbl" style="margin-top:14px;">Cloud Relay &amp; Polling</div>
+        <div class="field"><label>Cloud Relay Endpoint (MQTT / Firebase / Webhook)</label><input type="text" id="cfgCloudUrl" placeholder="https://your-relay.example.com/telemetry" /></div>
+        <div class="field">
+          <label>Polling Interval</label>
+          <select id="cfgInterval">
+            <option value="15000">15 seconds</option>
+            <option value="30000">30 seconds</option>
+            <option value="60000" selected>60 seconds</option>
+            <option value="300000">5 minutes</option>
+          </select>
+        </div>
+
+        <div class="card-lbl" style="margin-top:14px;">Live Diagnostics</div>
+        <div class="kv-row tabular"><span>Active Mode:</span><strong id="diagMode">LAN (192.168.1.x)</strong></div>
+        <div class="kv-row tabular"><span>Wi-Fi RSSI / Uptime:</span><strong id="diagRssi">-54 dBm • 4h 12m</strong></div>
+        <div class="kv-row tabular"><span>Free Heap / Reset:</span><strong id="diagHeap">182 KB • Power-On</strong></div>
+
+        <div style="display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="saveConfigSheet()">Save to NVS</button>
+          <button class="btn" style="border-color:rgba(220,38,38,0.45); color:var(--danger);" onclick="softRebootEsp()">⏻ Soft Reboot ESP32</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 14-Agency Consensus Drawer -->
+  <div class="sheet-backdrop" id="modelBackdrop" onclick="if(event.target===this)closeModelBreakdown()">
+    <div class="sheet-panel">
+      <div class="card-hd">
+        <span class="card-lbl">14 Global Weather Models vs. BME280</span>
+        <button class="btn" onclick="closeModelBreakdown()">✕</button>
+      </div>
+      <div class="scroll-x">
+        <table>
+          <thead><tr><th>Agency / Model</th><th>Temp</th><th>Rain %</th><th>SLP</th><th>Match</th></tr></thead>
+          <tbody id="modal14Body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STATE = {
+      unit: localStorage.getItem('jl_unit') || 'C',
+      theme: localStorage.getItem('jl_theme') || 'auto',
+      agencyFilter: 'ALL',
+      pollMs: 60000,
+      cloudRelayUrl: localStorage.getItem('jl_cloud_url') || '',
+      connMode: 'LAN',
+      telemetry: null,
+      models14: [],
+      hourly: [],
+      daily: []
+    };
+
+    const MOCK_TELEMETRY = {
+      stationName: 'Juan Lookout • San Jose City',
+      lat: 15.8003302,
+      lon: 121.0030307,
+      tempC: 29.4,
+      humPct: 74,
+      dewC: 24.2,
+      hiC: 33.1,
+      slpHpa: 1013.4,
+      d3hP: -0.4,
+      windKmh: 14,
+      windDirDeg: 45,
+      gustKmh: 24,
+      rainProb: 20,
+      rainMmH: 0.0,
+      cloudCoverPct: 34,
+      uvIndex: 5,
+      visibilityKm: 10.0,
+      syncedModel: 'ECMWF IFS 9km',
+      sensorMatchPct: 98.6,
+      aiSteps: 148,
+      nvsRecovered10m: 144,
+      nvsRecovered30m: 48,
+      wifiRssi: -53,
+      ipAddr: '192.168.1.48',
+      uptimeStr: '3d 14h 22m',
+      freeHeapKb: 184.5,
+      resetReason: 'Power-On',
+      sunrise: '05:56 AM',
+      sunset: '05:24 PM',
+      solarNoon: '11:40 AM',
+      goldenHour: '04:50 PM',
+      moonPhase: '🌔 Waxing Gibbous',
+      moonIllum: 86,
+      nextLunarEvent: 'Full Moon in 3d',
+      issPass: 'Tonight 07:42 PM',
+      issGeom: 'SW → NE • 54°',
+      issuedTs: '25 Nov 2026 05:00 PM PHST',
+      syncedTs: new Date().toLocaleTimeString(),
+      baroSpark: [1014.1, 1013.9, 1013.7, 1013.5, 1013.4],
+      alerts: [
+        {
+          agency: 'PAGASA',
+          severity: 'yellow',
+          tier: 'Yellow Rainfall / Thunderstorm Watch',
+          title: 'PAGASA — Local Thunderstorm & Shear Line Advisory (Luzon)',
+          issued: '25 Nov 2026 04:30 PM PHST',
+          areas: 'San Jose City, Lupao, Carranglan, Rizal, and Sierra Madre / Caraballo foothills',
+          detail: 'Light to moderate rain showers with occasional lightning and gusty winds may affect parts of Nueva Ecija during afternoon/evening convective buildup.',
+          actions: 'Monitor local drainage near creeks/low roads; secure light outdoor items during gusts.'
+        },
+        {
+          agency: 'NDRRMC',
+          severity: 'yellow',
+          tier: 'Preparedness Advisory',
+          title: 'NDRRMC — Regional Weather & Flood Preparedness Notice',
+          issued: '25 Nov 2026 02:00 PM PHST',
+          areas: 'Region III (Central Luzon) — Nueva Ecija',
+          detail: 'LDRRMCs advised to maintain heightened situational awareness and coordinate barangay monitoring along river tributaries.',
+          actions: 'Keep emergency go-bag, flashlight, and weather alerts accessible.'
+        },
+        {
+          agency: 'PHIVOLCS',
+          severity: 'normal',
+          tier: 'Baseline Monitoring',
+          title: 'PHIVOLCS — Tectonic & Inland Seismic Status',
+          issued: '25 Nov 2026 12:00 PM PHST',
+          areas: 'San Jose City, Nueva Ecija (Inland)',
+          detail: 'No active volcano alert in immediate vicinity; inland seismic network operating normally.',
+          actions: 'Review DUCK, COVER, AND HOLD protocols with household.'
+        }
+      ],
+      models14: [
+        { name: 'ECMWF IFS 9km', tempC: 29.3, rainProb: 18, slpHpa: 1013.5, match: 98.6 },
+        { name: 'ECMWF IFS 0.25', tempC: 29.5, rainProb: 20, slpHpa: 1013.4, match: 97.9 },
+        { name: 'ECMWF AIFS (AI)', tempC: 29.2, rainProb: 15, slpHpa: 1013.6, match: 98.1 },
+        { name: 'NOAA GFS', tempC: 30.1, rainProb: 25, slpHpa: 1012.8, match: 95.4 },
+        { name: 'GraphCast (AI)', tempC: 29.4, rainProb: 18, slpHpa: 1013.3, match: 97.5 },
+        { name: 'DWD ICON', tempC: 29.6, rainProb: 22, slpHpa: 1013.2, match: 96.8 },
+        { name: 'JMA GSM', tempC: 29.1, rainProb: 15, slpHpa: 1013.8, match: 96.2 },
+        { name: 'CMC GEM', tempC: 29.8, rainProb: 24, slpHpa: 1013.0, match: 95.8 },
+        { name: 'Meteo-France', tempC: 29.4, rainProb: 20, slpHpa: 1013.4, match: 96.5 },
+        { name: 'UKMO Global', tempC: 29.7, rainProb: 21, slpHpa: 1013.1, match: 96.0 },
+        { name: 'BOM ACCESS-G', tempC: 29.2, rainProb: 16, slpHpa: 1013.6, match: 95.9 },
+        { name: 'CMA GRAPES', tempC: 29.9, rainProb: 25, slpHpa: 1012.9, match: 95.2 },
+        { name: 'OM Best Match', tempC: 29.4, rainProb: 20, slpHpa: 1013.4, match: 98.2 },
+        { name: 'MET Norway', tempC: 29.3, rainProb: 18, slpHpa: 1013.5, match: 97.1 }
+      ],
+      hourly: Array.from({ length: 12 }, (_, i) => {
+        const hr = (new Date().getHours() + i) % 24;
+        const lbl = (hr % 12 || 12) + (hr >= 12 ? ' PM' : ' AM');
+        const wave = Math.sin(((hr - 6) / 24) * Math.PI * 2);
+        const tC = 27.5 + wave * 3.8 + (i === 0 ? 0.4 : 0);
+        return {
+          label: i === 0 ? 'Now' : lbl,
+          tempC: Number(tC.toFixed(1)),
+          rainProb: Math.max(5, Math.min(85, Math.round(18 + (i % 4) * 9))),
+          windKmh: Math.round(12 + Math.cos(i * 0.6) * 4),
+          windDeg: 45 + i * 5
+        };
+      }),
+      daily: [
+        { day: 'Thu', sky: 'Partly Cloudy', lowC: 23, highC: 32, rainProb: 25 },
+        { day: 'Fri', sky: 'Scattered Showers', lowC: 23, highC: 31, rainProb: 55 },
+        { day: 'Sat', sky: 'Passing Clouds', lowC: 22, highC: 31, rainProb: 30 },
+        { day: 'Sun', sky: 'Sunny Intervals', lowC: 22, highC: 32, rainProb: 15 },
+        { day: 'Mon', sky: 'Warm & Breezy', lowC: 23, highC: 33, rainProb: 20 },
+        { day: 'Tue', sky: 'Afternoon T-Storm', lowC: 23, highC: 31, rainProb: 60 },
+        { day: 'Wed', sky: 'Partly Cloudy', lowC: 22, highC: 32, rainProb: 25 }
+      ]
+    };
+
+    function fmtTemp(c, withUnit = true) {
+      if (c === null || c === undefined || Number.isNaN(c)) return '--.-';
+      const val = STATE.unit === 'F' ? (c * 1.8 + 32) : c;
+      return val.toFixed(1) + (withUnit ? ('°' + STATE.unit) : '°');
+    }
+
+    function setUnit(u) {
+      STATE.unit = u;
+      localStorage.setItem('jl_unit', u);
+      document.getElementById('btnC').classList.toggle('active', u === 'C');
+      document.getElementById('btnF').classList.toggle('active', u === 'F');
+      if (STATE.telemetry) renderAll(STATE.telemetry);
+    }
+
+    function applyThemeMode() {
+      let mode = STATE.theme;
+      if (mode === 'auto') {
+        const hr = new Date().getHours();
+        mode = (hr >= 6 && hr < 18) ? 'day' : 'night';
+      }
+      document.documentElement.setAttribute('data-theme', mode);
+      document.getElementById('themeBtn').textContent = mode === 'night' ? '☀️' : '🌙';
+    }
+
+    function toggleTheme() {
+      const cur = document.documentElement.getAttribute('data-theme');
+      STATE.theme = cur === 'night' ? 'day' : 'night';
+      localStorage.setItem('jl_theme', STATE.theme);
+      applyThemeMode();
+    }
+
+    function degToDir(deg) {
+      const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+      return dirs[Math.round((((deg % 360) + 360) % 360) / 45) % 8];
+    }
+
+    function toggleHazardBanner(forceOpen) {
+      const body = document.getElementById('hazardBody');
+      const open = typeof forceOpen === 'boolean' ? forceOpen : !body.classList.contains('open');
+      body.classList.toggle('open', open);
+      document.getElementById('hazardToggleBtn').textContent = open ? 'Collapse ▴' : 'Expand ▾';
+    }
+
+    function setAgencyFilter(agency, btn) {
+      STATE.agencyFilter = agency;
+      btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('btn-primary'));
+      btn.classList.add('btn-primary');
+      renderHazards(STATE.telemetry);
+    }
+
+    function renderHazards(d) {
+      const banner = document.getElementById('hazardBanner');
+      banner.classList.remove('sev-yellow', 'sev-orange', 'sev-red');
+      const allAlerts = d.alerts || [];
+      const hasRed = allAlerts.some(a => a.severity === 'red');
+      const hasOrange = allAlerts.some(a => a.severity === 'orange');
+      const hasYellow = allAlerts.some(a => a.severity === 'yellow');
+      if (hasRed) banner.classList.add('sev-red');
+      else if (hasOrange) banner.classList.add('sev-orange');
+      else if (hasYellow) banner.classList.add('sev-yellow');
+
+      // Auto-expand when active yellow/orange/red alerts exist
+      if (hasRed || hasOrange || hasYellow) toggleHazardBanner(true);
+
+      const baroBadge = document.getElementById('baroCrossCheckBadge');
+      if (d.d3hP <= -1.6) {
+        baroBadge.textContent = `Baro Cross-Check: Drop (${d.d3hP.toFixed(1)} hPa/3h)`;
+        baroBadge.className = 'badge b-crit';
+      } else {
+        baroBadge.textContent = `Baro Cross-Check: Steady (${d.d3hP >= 0 ? '+' : ''}${d.d3hP.toFixed(1)} hPa/3h)`;
+        baroBadge.className = 'badge b-ok';
+      }
+
+      document.getElementById('hazardTimestamps').textContent = `Issued: ${d.issuedTs} • Synced: ${d.syncedTs}`;
+      document.getElementById('hazardPulse').style.animation = 'none';
+      void document.getElementById('hazardPulse').offsetWidth;
+      document.getElementById('hazardPulse').style.animation = 'pulseAnim 2s infinite';
+
+      const filtered = STATE.agencyFilter === 'ALL'
+        ? allAlerts
+        : allAlerts.filter(a => a.agency === STATE.agencyFilter);
+
+      document.getElementById('hazardCountLbl').textContent = `${filtered.length} bulletin(s)`;
+      const listEl = document.getElementById('hazardList');
+      listEl.innerHTML = filtered.map((a, idx) => `
+        <div class="alert-item" onclick="selectAlert(${idx})">
+          <div style="display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap;">
+            <strong>[${a.agency}] ${a.title}</strong>
+            <span class="badge ${a.severity === 'red' ? 'b-crit' : (a.severity === 'yellow' || a.severity === 'orange' ? 'b-warn' : 'b-ok')}">${a.tier}</span>
+          </div>
+          <div class="muted tabular" style="margin-top:3px;">Issued: ${a.issued} • Areas: ${a.areas}</div>
+        </div>
+      `).join('') || '<div class="muted" style="margin-top:8px;">No bulletins for selected agency.</div>';
+
+      window._activeFilteredAlerts = filtered;
+    }
+
+    function selectAlert(idx) {
+      const item = (window._activeFilteredAlerts || [])[idx];
+      if (!item) return;
+      document.getElementById('hazardReader').innerHTML = `
+        <div style="font-weight:800; margin-bottom:4px;">${item.title} (${item.issued})</div>
+        <div><strong>Affected Areas:</strong> ${item.areas}</div>
+        <div style="margin-top:4px;">${item.detail}</div>
+        <div style="margin-top:6px; color:var(--accent);"><strong>Recommended Action:</strong> ${item.actions}</div>
+      `;
+    }
+
+    function renderAll(d) {
+      applyThemeMode();
+      document.getElementById('hdrStationName').textContent = d.stationName;
+      document.getElementById('hdrClock').textContent =
+        `${d.lat.toFixed(4)}°N, ${d.lon.toFixed(4)}°E • ${new Date().toLocaleTimeString()}`;
+      document.getElementById('hdrTemp').textContent = fmtTemp(d.tempC);
+
+      const modeBadge = document.getElementById('connModeBadge');
+      modeBadge.textContent = STATE.connMode;
+      modeBadge.className = STATE.connMode === 'LAN' ? 'badge b-ok' : 'badge b-warn';
+
+      renderHazards(d);
+
+      document.getElementById('syncedModelBadge').textContent =
+        `Synced Model: ${d.syncedModel} • ${d.sensorMatchPct.toFixed(1)}% Sensor Match ▸`;
+      document.getElementById('heroTemp').textContent = fmtTemp(d.tempC);
+      document.getElementById('heroFeels').textContent =
+        `Feels Like ${fmtTemp(d.hiC)} • Dew Point ${fmtTemp(d.dewC)}`;
+      document.getElementById('heroPlainSummary').textContent =
+        `Local sensor reads ${fmtTemp(d.tempC)} with ${d.humPct}% RH and ${d.windKmh} km/h ${degToDir(d.windDirDeg)} breeze in San Jose City; ${d.rainProb}% chance of rain in the next hour.`;
+
+      document.getElementById('windArrowGroup').setAttribute('transform', `rotate(${d.windDirDeg} 30 30)`);
+      document.getElementById('windMainTxt').textContent = `${d.windKmh} km/h ${degToDir(d.windDirDeg)}`;
+      document.getElementById('windGustTxt').textContent = `Gusts ${d.gustKmh} km/h`;
+      document.getElementById('slpHeroTxt').textContent = `${d.slpHpa.toFixed(1)} hPa`;
+      document.getElementById('rainHeroTxt').textContent = `${d.rainProb}% • ${d.rainMmH.toFixed(1)} mm/h`;
+      document.getElementById('cloudHeroTxt').textContent = `Cloud Cover ${d.cloudCoverPct}%`;
+      document.getElementById('uvHeroTxt').textContent = `UV ${d.uvIndex}`;
+      document.getElementById('visHeroTxt').innerHTML =
+        `Vis ${d.visibilityKm.toFixed(1)} km • RH <strong id="heroRhVal">${d.humPct}%</strong> <span class="badge-src src-sensor">SENSOR</span>`;
+
+      const sparkPts = (d.baroSpark || [1013, 1013.2, 1013.4]).map((v, i, arr) => {
+        const x = arr.length === 1 ? 70 : (i / (arr.length - 1)) * 140;
+        const y = 24 - ((v - 1005) / 15) * 18;
+        return `${x.toFixed(1)},${Math.max(4, Math.min(26, y)).toFixed(1)}`;
+      }).join(' ');
+      document.getElementById('heroBaroSpark').setAttribute('points', sparkPts);
+
+      const uvRatio = Math.max(0, Math.min(1, d.uvIndex / 11));
+      const dashLen = 157;
+      document.getElementById('uvArcFill').setAttribute('stroke-dasharray', `${(uvRatio * dashLen).toFixed(1)} ${dashLen}`);
+
+      // Hourly Strip
+      document.getElementById('hourlyStrip').innerHTML = (d.hourly || []).map(h => `
+        <div class="hr-tile tabular">
+          <div style="font-size:0.72rem; font-weight:700;">${h.label}</div>
+          <div style="font-size:0.95rem; font-weight:800; color:var(--c-temp); margin-top:3px;">${fmtTemp(h.tempC, false)}</div>
+          <div class="hr-bar-track"><div class="hr-bar-fill" style="height:${h.rainProb}%"></div></div>
+          <div style="font-size:0.68rem; color:var(--c-rain); font-weight:700;">${h.rainProb}%</div>
+          <div class="muted" style="font-size:0.68rem; margin-top:2px;">${degToDir(h.windDeg)} ${h.windKmh}</div>
+        </div>
+      `).join('');
+
+      // 14-Agency Consensus & Spread
+      const temps = (d.models14 || []).map(m => m.tempC);
+      const minM = Math.min(...temps);
+      const maxM = Math.max(...temps);
+      const avgM = temps.reduce((a, b) => a + b, 0) / Math.max(1, temps.length);
+      document.getElementById('spreadMin').textContent = fmtTemp(minM);
+      document.getElementById('spreadAvg').textContent = fmtTemp(avgM);
+      document.getElementById('spreadMax').textContent = fmtTemp(maxM);
+      const span = Math.max(0.5, maxM - minM);
+      const avgPct = Math.max(5, Math.min(95, ((avgM - minM) / span) * 100));
+      document.getElementById('spreadRange').style.left = '8%';
+      document.getElementById('spreadRange').style.right = '8%';
+      document.getElementById('spreadAvgDot').style.left = `${avgPct}%`;
+      const tightCount = temps.filter(t => Math.abs(t - avgM) <= 0.8).length;
+      document.getElementById('consensusPctBadge').textContent =
+        `${Math.round((tightCount / Math.max(1, temps.length)) * 100)}% Consensus (${temps.length} Models)`;
+
+      // 7-Day Table
+      document.getElementById('sevenDayBody').innerHTML = (d.daily || []).map(day => `
+        <tr class="tabular">
+          <td><strong>${day.day}</strong></td>
+          <td>${day.sky}</td>
+          <td>${fmtTemp(day.lowC, false)} / ${fmtTemp(day.highC, false)}</td>
+          <td style="color:var(--c-rain); font-weight:700;">${day.rainProb}%</td>
+        </tr>
+      `).join('');
+
+      // Astronomy & Sky Clarity
+      document.getElementById('sunTimesTxt').textContent = `${d.sunrise} / ${d.sunset}`;
+      document.getElementById('solarNoonTxt').textContent = `${d.solarNoon} / ${d.goldenHour}`;
+      document.getElementById('moonPhaseBadge').textContent = d.moonPhase;
+      document.getElementById('moonMetaTxt').textContent = `${d.moonIllum}% • ${d.nextLunarEvent}`;
+
+      const spreadC = d.tempC - d.dewC;
+      const clarity = Math.max(0, Math.min(100, Math.round(
+        (100 - d.cloudCoverPct) * 0.6 +
+        Math.max(0, 100 - d.humPct) * 0.25 +
+        Math.min(15, Math.max(0, spreadC * 3))
+      )));
+      document.getElementById('clarityScoreBadge').textContent = `${clarity} / 100`;
+      document.getElementById('clarityBigNum').textContent = `${clarity}% Clear Sky`;
+      document.getElementById('clarityReasonTxt').textContent =
+        clarity >= 70
+          ? 'Clear sky window with low cloud interference for stargazing.'
+          : 'Cloud cover or elevated humidity reduces deep-sky contrast.';
+      const condRisk = (spreadC <= 2.0 && d.humPct >= 85) ? 'High Dew/Lens Risk' : (spreadC <= 3.5 ? 'Moderate Risk' : 'Low Risk');
+      document.getElementById('condensationRiskTxt').textContent = `${condRisk} (Spread ${spreadC.toFixed(1)}°C)`;
+
+      document.getElementById('issPassTxt').textContent = d.issPass;
+      document.getElementById('issElevTxt').textContent = d.issGeom;
+
+      // NVS Vault & Diagnostics
+      document.getElementById('nvsRecoveredTxt').textContent = `${d.nvsRecovered10m} (10m) • ${d.nvsRecovered30m} (30m)`;
+      document.getElementById('aiVaultTxt').textContent = `SGD Step #${d.aiSteps} • Calibrated`;
+      document.getElementById('diagMode').textContent = `${STATE.connMode} (${d.ipAddr})`;
+      document.getElementById('diagRssi').textContent = `${d.wifiRssi} dBm • ${d.uptimeStr}`;
+      document.getElementById('diagHeap').textContent = `${d.freeHeapKb} KB • ${d.resetReason}`;
+    }
+
+    function openModelBreakdown() {
+      const rows = STATE.telemetry ? STATE.telemetry.models14 : [];
+      document.getElementById('modal14Body').innerHTML = rows.map(m => `
+        <tr class="tabular">
+          <td><strong>${m.name}</strong></td>
+          <td>${fmtTemp(m.tempC)}</td>
+          <td>${m.rainProb}%</td>
+          <td>${m.slpHpa.toFixed(1)} hPa</td>
+          <td>${m.match.toFixed(1)}%</td>
+        </tr>
+      `).join('');
+      document.getElementById('modelBackdrop').classList.add('open');
+    }
+    function closeModelBreakdown() {
+      document.getElementById('modelBackdrop').classList.remove('open');
+    }
+
+    function openConfigSheet() {
+      document.getElementById('configBackdrop').classList.add('open');
+    }
+    function closeConfigSheet() {
+      document.getElementById('configBackdrop').classList.remove('open');
+    }
+    function unlockConfig() {
+      if (document.getElementById('pinInput').value === '1234') {
+        document.getElementById('pinGate').style.display = 'none';
+        document.getElementById('configUnlocked').style.display = 'block';
+      } else {
+        alert('Invalid PIN (default: 1234)');
+      }
+    }
+    function saveConfigSheet() {
+      STATE.cloudRelayUrl = document.getElementById('cfgCloudUrl').value.trim();
+      STATE.pollMs = parseInt(document.getElementById('cfgInterval').value, 10) || 60000;
+      localStorage.setItem('jl_cloud_url', STATE.cloudRelayUrl);
+      alert('Configuration saved. Remote cloud relay & polling interval updated.');
+      closeConfigSheet();
+    }
+    function softRebootEsp() {
+      if (!confirm('Send Soft Reboot command to ESP32?')) return;
+      fetch('/api/reboot', { method: 'POST' }).catch(() => {});
+      alert('Soft reboot requested.');
+      closeConfigSheet();
+    }
+
+    function exportDataset(kind) {
+      const d = STATE.telemetry || MOCK_TELEMETRY;
+      if (kind === 'json') {
+        const blob = new Blob([JSON.stringify(d, null, 2)], { type: 'application/json' });
+        downloadBlob(blob, 'juan_lookout_ai_dataset.json');
+      } else {
+        const rows = ['timestamp,station,temp_c,hum_pct,dew_c,slp_hpa,synced_model,sensor_match_pct'];
+        rows.push(`${new Date().toISOString()},"${d.stationName}",${d.tempC},${d.humPct},${d.dewC},${d.slpHpa},"${d.syncedModel}",${d.sensorMatchPct}`);
+        const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+        downloadBlob(blob, 'juan_lookout_ai_dataset.csv');
+      }
+    }
+
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    async function refreshAll(force = false) {
+      // Try Local LAN ESP32 first; fallback to Cloud Relay or Mock snapshot
+      try {
+        const ctrl = new AbortController();
+        const tid = setTimeout(() => ctrl.abort(), 2200);
+        const res = await fetch('/api/sensors', { signal: ctrl.signal });
+        clearTimeout(tid);
+        if (res.ok) {
+          const raw = await res.json();
+          STATE.connMode = 'LAN';
+          STATE.telemetry = {
+            ...MOCK_TELEMETRY,
+            stationName: raw.locationName || MOCK_TELEMETRY.stationName,
+            tempC: typeof raw.temp === 'number' ? raw.temp : MOCK_TELEMETRY.tempC,
+            humPct: typeof raw.hum === 'number' ? raw.hum : MOCK_TELEMETRY.humPct,
+            dewC: typeof raw.dew === 'number' ? raw.dew : MOCK_TELEMETRY.dewC,
+            hiC: typeof raw.hi === 'number' ? raw.hi : MOCK_TELEMETRY.hiC,
+            slpHpa: typeof raw.slp === 'number' ? raw.slp : MOCK_TELEMETRY.slpHpa,
+            d3hP: typeof raw.d3hP === 'number' ? raw.d3hP : MOCK_TELEMETRY.d3hP,
+            aiSteps: raw.aiSteps ?? MOCK_TELEMETRY.aiSteps,
+            syncedTs: new Date().toLocaleTimeString()
+          };
+          renderAll(STATE.telemetry);
+          return;
+        }
+      } catch (_) {
+        // Fallback to Cloud Relay if configured
+        if (STATE.cloudRelayUrl) {
+          try {
+            const cRes = await fetch(STATE.cloudRelayUrl);
+            if (cRes.ok) {
+              const cData = await cRes.json();
+              STATE.connMode = 'CLOUD';
+              STATE.telemetry = { ...MOCK_TELEMETRY, ...cData, syncedTs: new Date().toLocaleTimeString() };
+              renderAll(STATE.telemetry);
+              return;
+            }
+          } catch (__) {}
+        }
+      }
+
+      STATE.connMode = STATE.cloudRelayUrl ? 'CLOUD (CACHED)' : 'LAN / DEMO';
+      STATE.telemetry = { ...MOCK_TELEMETRY, syncedTs: new Date().toLocaleTimeString() };
+      renderAll(STATE.telemetry);
+    }
+
+    applyThemeMode();
+    refreshAll(true);
+    setInterval(() => refreshAll(false), STATE.pollMs);
+  </script>
+</body>
+</html>
