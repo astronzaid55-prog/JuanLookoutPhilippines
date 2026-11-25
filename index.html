@@ -508,7 +508,7 @@
         </div>
 
         <div class="card-lbl" style="margin-top:14px;">Live Diagnostics</div>
-        <div class="kv-row tabular"><span>Active Mode:</span><strong id="diagMode">LAN (192.168.1.x)</strong></div>
+        <div class="kv-row tabular"><span>Active Mode:</span><strong id="diagMode">LAN (192.168.0.229)</strong></div>
         <div class="kv-row tabular"><span>Wi-Fi RSSI / Uptime:</span><strong id="diagRssi">-54 dBm • 4h 12m</strong></div>
         <div class="kv-row tabular"><span>Free Heap / Reset:</span><strong id="diagHeap">182 KB • Power-On</strong></div>
 
@@ -537,6 +537,9 @@
   </div>
 
   <script>
+    const ESP32_IP = '192.168.0.229';
+    const ESP32_BASE_URL = `http://${ESP32_IP}`;
+
     const STATE = {
       unit: localStorage.getItem('jl_unit') || 'C',
       theme: localStorage.getItem('jl_theme') || 'auto',
@@ -574,7 +577,7 @@
       nvsRecovered10m: 144,
       nvsRecovered30m: 48,
       wifiRssi: -53,
-      ipAddr: '192.168.1.48',
+      ipAddr: ESP32_IP,
       uptimeStr: '3d 14h 22m',
       freeHeapKb: 184.5,
       resetReason: 'Power-On',
@@ -723,7 +726,6 @@
       else if (hasOrange) banner.classList.add('sev-orange');
       else if (hasYellow) banner.classList.add('sev-yellow');
 
-      // Auto-expand when active yellow/orange/red alerts exist
       if (hasRed || hasOrange || hasYellow) toggleHazardBanner(true);
 
       const baroBadge = document.getElementById('baroCrossCheckBadge');
@@ -812,7 +814,6 @@
       const dashLen = 157;
       document.getElementById('uvArcFill').setAttribute('stroke-dasharray', `${(uvRatio * dashLen).toFixed(1)} ${dashLen}`);
 
-      // Hourly Strip
       document.getElementById('hourlyStrip').innerHTML = (d.hourly || []).map(h => `
         <div class="hr-tile tabular">
           <div style="font-size:0.72rem; font-weight:700;">${h.label}</div>
@@ -823,7 +824,6 @@
         </div>
       `).join('');
 
-      // 14-Agency Consensus & Spread
       const temps = (d.models14 || []).map(m => m.tempC);
       const minM = Math.min(...temps);
       const maxM = Math.max(...temps);
@@ -840,7 +840,6 @@
       document.getElementById('consensusPctBadge').textContent =
         `${Math.round((tightCount / Math.max(1, temps.length)) * 100)}% Consensus (${temps.length} Models)`;
 
-      // 7-Day Table
       document.getElementById('sevenDayBody').innerHTML = (d.daily || []).map(day => `
         <tr class="tabular">
           <td><strong>${day.day}</strong></td>
@@ -850,7 +849,6 @@
         </tr>
       `).join('');
 
-      // Astronomy & Sky Clarity
       document.getElementById('sunTimesTxt').textContent = `${d.sunrise} / ${d.sunset}`;
       document.getElementById('solarNoonTxt').textContent = `${d.solarNoon} / ${d.goldenHour}`;
       document.getElementById('moonPhaseBadge').textContent = d.moonPhase;
@@ -874,7 +872,6 @@
       document.getElementById('issPassTxt').textContent = d.issPass;
       document.getElementById('issElevTxt').textContent = d.issGeom;
 
-      // NVS Vault & Diagnostics
       document.getElementById('nvsRecoveredTxt').textContent = `${d.nvsRecovered10m} (10m) • ${d.nvsRecovered30m} (30m)`;
       document.getElementById('aiVaultTxt').textContent = `SGD Step #${d.aiSteps} • Calibrated`;
       document.getElementById('diagMode').textContent = `${STATE.connMode} (${d.ipAddr})`;
@@ -922,7 +919,7 @@
     }
     function softRebootEsp() {
       if (!confirm('Send Soft Reboot command to ESP32?')) return;
-      fetch('/api/reboot', { method: 'POST' }).catch(() => {});
+      fetch(`${ESP32_BASE_URL}/api/reboot`, { method: 'POST' }).catch(() => {});
       alert('Soft reboot requested.');
       closeConfigSheet();
     }
@@ -949,11 +946,10 @@
     }
 
     async function refreshAll(force = false) {
-      // Try Local LAN ESP32 first; fallback to Cloud Relay or Mock snapshot
       try {
         const ctrl = new AbortController();
         const tid = setTimeout(() => ctrl.abort(), 2200);
-        const res = await fetch('/api/sensors', { signal: ctrl.signal });
+        const res = await fetch(`${ESP32_BASE_URL}/api/sensors`, { signal: ctrl.signal });
         clearTimeout(tid);
         if (res.ok) {
           const raw = await res.json();
@@ -974,7 +970,6 @@
           return;
         }
       } catch (_) {
-        // Fallback to Cloud Relay if configured
         if (STATE.cloudRelayUrl) {
           try {
             const cRes = await fetch(STATE.cloudRelayUrl);
