@@ -192,7 +192,6 @@
       display: none; align-items: flex-end; justify-content: center; z-index: 60;
     }
     @media (min-width: 700px) { .sheet-backdrop { align-items: center; padding: 16px; } }
-    .sheet-backdrop.open { display: flex; }
     .sheet-panel {
       width: 100%; max-width: 640px; max-height: 88dvh; overflow-y: auto;
       background: var(--surface-strong); border: 1px solid var(--border);
@@ -300,7 +299,7 @@
             </div>
           </div>
           <p class="hero-summary" id="heroPlainSummary">
-            Waiting for live sensor and model telemetry.
+            Open ⚙ Config to set your ESP32 STA URL (when viewing from GitHub Pages) or open directly from your ESP32 IP.
           </p>
         </div>
 
@@ -383,7 +382,7 @@
         </div>
         <div class="spread-track">
           <div class="spread-range" id="spreadRange" style="left:8%; right:8%;"></div>
-          <div class="spread-avg" id="spreadAvgDot" style="left:50%;"></div>
+          <div class="spread-avg" id="spreadAvgDot" style="left:52%;"></div>
         </div>
         <p class="muted">Tap to inspect all 14 agencies with learned SGD weights &amp; MAE against your BME280.</p>
       </section>
@@ -458,7 +457,7 @@
         <div>
           <div class="kv-row tabular"><span>SGD AI &amp; Baro Calibration:</span><strong id="aiVaultTxt">0 steps • +0.00 hPa</strong></div>
           <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
-            <a class="btn btn-primary" href="/api/export.csv" onclick="return handleCsvExportClick(event)">⬇ Export AI Dataset (CSV)</a>
+            <a class="btn btn-primary" id="csvExportBtn" href="/api/export.csv" onclick="return handleCsvExportClick(event)">⬇ Export AI Dataset (CSV)</a>
             <button class="btn" onclick="exportDataset('json')">⬇ Export JSON</button>
           </div>
         </div>
@@ -476,7 +475,7 @@
       </div>
 
       <div id="pinGate">
-        <p class="muted">Enter station PIN to unlock Wi-Fi NVS slots, live advisory feed URL, calibration, and remote reboot.</p>
+        <p class="muted">Enter station PIN to unlock ESP32 STA endpoint, live advisory feed URL, Wi-Fi NVS slots, and calibration.</p>
         <div class="field">
           <label>Access PIN</label>
           <input type="password" id="pinInput" maxlength="8" placeholder="Default: 1234" value="1234" />
@@ -485,7 +484,11 @@
       </div>
 
       <div id="configUnlocked" style="display:none;">
-        <div class="card-lbl" style="margin-top:6px;">Live Advisory Feed Extraction (STA Mode)</div>
+        <div class="card-lbl" style="margin-top:6px;">ESP32 Connection &amp; Live Advisory Feed (GitHub / STA Mode)</div>
+        <div class="field">
+          <label>ESP32 Base URL (Leave blank if opened directly from ESP32; e.g. http://192.168.x.x if on GitHub Pages)</label>
+          <input type="text" id="cfgEspBaseUrl" placeholder="http://192.168.x.x (stored privately in browser)" />
+        </div>
         <div class="field">
           <label>Live Advisory Feed URL (JSON array or RSS/Atom bridge for PAGASA, NDRRMC, PHIVOLCS, FB, X)</label>
           <input type="text" id="cfgAdvisoryFeedUrl" placeholder="https://your-feed-proxy.example.com/advisories.json" />
@@ -539,7 +542,7 @@
           <div class="field"><label>WU Station ID</label><input type="text" id="cfgWuId" placeholder="Optional" /></div>
           <div class="field"><label>ThingSpeak Write Key</label><input type="text" id="cfgTsKey" placeholder="Optional" /></div>
         </div>
-        <div class="field"><label>Discord Webhook / JSON Relay URL</label><input type="text" id="cfgCloudUrl" placeholder="https://..." /></div>
+        <div class="field"><label>HTTPS Cloud Relay / Discord Webhook URL</label><input type="text" id="cfgCloudUrl" placeholder="https://..." /></div>
 
         <div class="card-lbl" style="margin-top:14px;">Live Diagnostics</div>
         <div class="kv-row tabular"><span>Active Mode / Host:</span><strong id="diagMode">STA</strong></div>
@@ -547,8 +550,8 @@
         <div class="kv-row tabular"><span>Free Heap / Reset:</span><strong id="diagHeap">-- KB • --</strong></div>
 
         <div style="display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;">
-          <button class="btn btn-primary" onclick="saveConfigSheet()">Save to NVS</button>
-          <a class="btn" href="/update">⬆ OTA Flash</a>
+          <button class="btn btn-primary" onclick="saveConfigSheet()">Save to NVS &amp; Browser</button>
+          <a class="btn" id="otaBtn" href="/update">⬆ OTA Flash</a>
           <button class="btn" style="border-color:rgba(220,38,38,0.45); color:var(--danger);" onclick="softRebootEsp()">⏻ Soft Reboot ESP32</button>
         </div>
       </div>
@@ -577,6 +580,7 @@
       theme: localStorage.getItem('jl_theme') || 'auto',
       agencyFilter: 'ALL',
       pollMs: parseInt(localStorage.getItem('jl_poll_ms') || '60000', 10) || 60000,
+      espBaseUrl: (localStorage.getItem('jl_esp_base_url') || '').replace(/\/+$/, ''),
       cloudRelayUrl: localStorage.getItem('jl_cloud_url') || '',
       advisoryFeedUrl: localStorage.getItem('jl_advisory_feed_url') || '',
       includeSensorSignal: localStorage.getItem('jl_include_signal') !== '0',
@@ -588,6 +592,10 @@
       lastFeedSync: null,
       pollTimer: null
     };
+
+    function apiUrl(path) {
+      return `${STATE.espBaseUrl}${path}`;
+    }
 
     const BASELINE_TELEMETRY = {
       stationName: 'San Jose City, Nueva Ecija',
@@ -620,7 +628,7 @@
       reportingRainModels: 0,
       agreeingRainModels: 0,
       earlyWarningTier: 'Awaiting Telemetry',
-      earlyWarningDetail: 'Connect to ESP32 or configure a live advisory feed URL.',
+      earlyWarningDetail: 'Open ⚙ Config to set your ESP32 STA URL (e.g. http://192.168.x.x) or Cloud Relay URL.',
       weatherSystem: '--',
       neighborhoodImpact: '',
       aiSteps: 0,
@@ -929,7 +937,10 @@
 
       const modeBadge = document.getElementById('connModeBadge');
       modeBadge.textContent = STATE.connMode;
-      modeBadge.className = STATE.connMode === 'STA' ? 'badge b-ok' : 'badge b-warn';
+      modeBadge.className = (STATE.connMode === 'STA' || STATE.connMode === 'CLOUD') ? 'badge b-ok' : 'badge b-warn';
+
+      document.getElementById('csvExportBtn').href = apiUrl('/api/export.csv');
+      document.getElementById('otaBtn').href = apiUrl('/update');
 
       renderHazards(d);
 
@@ -1026,7 +1037,7 @@
       document.getElementById('condensationRiskTxt').textContent = `${d.fogDew || '--'} (Spread ${spreadC.toFixed(1)}°C)`;
 
       const h = STATE.health;
-      const hostLabel = window.location.hostname || 'STA';
+      const hostLabel = STATE.espBaseUrl || window.location.hostname || 'STA';
       if (h) {
         document.getElementById('espHealthBadge').textContent = h.bmeOk ? 'HEALTHY' : 'DEGRADED';
         document.getElementById('espHealthBadge').className = h.bmeOk ? 'badge b-ok' : 'badge b-warn';
@@ -1089,13 +1100,14 @@
       }
       document.getElementById('pinGate').style.display = 'none';
       document.getElementById('configUnlocked').style.display = 'block';
+      document.getElementById('cfgEspBaseUrl').value = STATE.espBaseUrl;
       document.getElementById('cfgInterval').value = String(STATE.pollMs);
       document.getElementById('cfgCloudUrl').value = STATE.cloudRelayUrl;
       document.getElementById('cfgAdvisoryFeedUrl').value = STATE.advisoryFeedUrl;
       document.getElementById('cfgIncludeSignal').value = STATE.includeSensorSignal ? '1' : '0';
 
       try {
-        const res = await fetch('/api/config');
+        const res = await fetch(apiUrl('/api/config'));
         if (res.ok) {
           const cfg = await res.json();
           if (cfg.tOff !== undefined) document.getElementById('cfgTOff').value = cfg.tOff;
@@ -1124,11 +1136,15 @@
     }
 
     async function saveConfigSheet() {
+      let rawBase = document.getElementById('cfgEspBaseUrl').value.trim().replace(/\/+$/, '');
+      if (rawBase && !/^https?:\/\//i.test(rawBase)) rawBase = 'http://' + rawBase;
+      STATE.espBaseUrl = rawBase;
       STATE.advisoryFeedUrl = document.getElementById('cfgAdvisoryFeedUrl').value.trim();
       STATE.includeSensorSignal = document.getElementById('cfgIncludeSignal').value === '1';
       STATE.cloudRelayUrl = document.getElementById('cfgCloudUrl').value.trim();
       STATE.pollMs = parseInt(document.getElementById('cfgInterval').value, 10) || 60000;
 
+      localStorage.setItem('jl_esp_base_url', STATE.espBaseUrl);
       localStorage.setItem('jl_advisory_feed_url', STATE.advisoryFeedUrl);
       localStorage.setItem('jl_include_signal', STATE.includeSensorSignal ? '1' : '0');
       localStorage.setItem('jl_cloud_url', STATE.cloudRelayUrl);
@@ -1164,7 +1180,7 @@
       body.set('telSec', String(Math.max(30, Math.round(STATE.pollMs / 1000))));
 
       try {
-        await fetch('/config', { method: 'POST', body });
+        await fetch(apiUrl('/config'), { method: 'POST', body });
         alert('Configuration saved.');
       } catch (_) {
         alert('Saved browser & feed configuration.');
@@ -1175,14 +1191,14 @@
 
     function softRebootEsp() {
       if (!confirm('Send Soft Reboot command to ESP32?')) return;
-      fetch('/api/reboot', { method: 'POST' }).catch(() => {});
+      fetch(apiUrl('/api/reboot'), { method: 'POST' }).catch(() => {});
       alert('Soft reboot requested.');
       closeConfigSheet();
     }
 
     function syncDeviceClock() {
       const ep = Math.floor(Date.now() / 1000);
-      fetch('/sync?epoch=' + ep)
+      fetch(apiUrl('/sync?epoch=' + ep))
         .then(() => refreshAll(true))
         .catch(() => {});
     }
@@ -1217,7 +1233,7 @@
 
     async function fetchHealthIfAvailable() {
       try {
-        const res = await fetch('/api/health');
+        const res = await fetch(apiUrl('/api/health'));
         if (res.ok) STATE.health = await res.json();
       } catch (_) {}
     }
@@ -1226,39 +1242,42 @@
       await Promise.all([fetchHealthIfAvailable(), fetchExternalAdvisories()]);
       const nowTime = new Date().toLocaleTimeString();
 
-      try {
-        const ctrl = new AbortController();
-        const tid = setTimeout(() => ctrl.abort(), 2400);
-        const res = await fetch('/api/sensors', { signal: ctrl.signal });
-        clearTimeout(tid);
-        if (res.ok) {
-          const raw = await res.json();
-          STATE.connMode = 'STA';
-          STATE.telemetry = {
-            ...BASELINE_TELEMETRY,
-            ...raw,
-            stationName: raw.locationName || BASELINE_TELEMETRY.stationName,
-            syncedTs: nowTime
-          };
-          renderAll(STATE.telemetry);
-          return;
-        }
-      } catch (_) {
-        if (STATE.cloudRelayUrl) {
-          try {
-            const cRes = await fetch(STATE.cloudRelayUrl);
-            if (cRes.ok) {
-              const cData = await cRes.json();
-              STATE.connMode = 'CLOUD';
-              STATE.telemetry = { ...BASELINE_TELEMETRY, ...cData, syncedTs: nowTime };
-              renderAll(STATE.telemetry);
-              return;
-            }
-          } catch (__) {}
-        }
+      const canQueryEsp = Boolean(STATE.espBaseUrl) || !window.location.hostname.endsWith('github.io');
+      if (canQueryEsp) {
+        try {
+          const ctrl = new AbortController();
+          const tid = setTimeout(() => ctrl.abort(), 2800);
+          const res = await fetch(apiUrl('/api/sensors'), { signal: ctrl.signal });
+          clearTimeout(tid);
+          if (res.ok) {
+            const raw = await res.json();
+            STATE.connMode = 'STA';
+            STATE.telemetry = {
+              ...BASELINE_TELEMETRY,
+              ...raw,
+              stationName: raw.locationName || BASELINE_TELEMETRY.stationName,
+              syncedTs: nowTime
+            };
+            renderAll(STATE.telemetry);
+            return;
+          }
+        } catch (_) {}
       }
 
-      STATE.connMode = STATE.cloudRelayUrl ? 'CLOUD' : 'STA (WAITING)';
+      if (STATE.cloudRelayUrl) {
+        try {
+          const cRes = await fetch(STATE.cloudRelayUrl);
+          if (cRes.ok) {
+            const cData = await cRes.json();
+            STATE.connMode = 'CLOUD';
+            STATE.telemetry = { ...BASELINE_TELEMETRY, ...cData, syncedTs: nowTime };
+            renderAll(STATE.telemetry);
+            return;
+          }
+        } catch (__) {}
+      }
+
+      STATE.connMode = 'STA (WAITING)';
       STATE.telemetry = { ...BASELINE_TELEMETRY, syncedTs: nowTime };
       renderAll(STATE.telemetry);
     }
