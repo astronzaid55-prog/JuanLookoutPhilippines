@@ -1,849 +1,973 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="day">
+<html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<meta name="theme-color" content="#0ea5e9" />
-<title>Juan Lookout — San Jose City Weather & AI Station</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<title>JUAN LOOKOUT PHILIPPINES</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
-:root {
---bg-grad: radial-gradient(circle at 15% -10%, #bae6fd 0%, #e0f2fe 38%, #f8fafc 85%);
---surface: rgba(255, 255, 255, 0.78);
---surface-strong: rgba(255, 255, 255, 0.96);
---surface-elev: rgba(241, 245, 249, 0.85);
---border: rgba(15, 23, 42, 0.11);
---text: #0f172a;
---muted: #475569;
---accent: #0284c7;
---accent-soft: rgba(2, 132, 199, 0.12);
---ok: #059669;
---warn: #d97706;
---danger: #dc2626;
---shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
---c-temp: #ea580c;
---c-hi: #e11d48;
---c-press: #7c3aed;
---c-hum: #0891b2;
---c-rain: #0284c7;
---c-wind: #0d9488;
---c-astro: #d97706;
-}
-
-html[data-theme="night"] {
---bg-grad: radial-gradient(circle at 18% -8%, #172554 0%, #090d16 58%, #04070e 100%);
---surface: rgba(15, 23, 42, 0.76);
---surface-strong: rgba(15, 23, 42, 0.96);
---surface-elev: rgba(30, 41, 59, 0.72);
---border: rgba(148, 163, 184, 0.16);
---text: #f8fafc;
---muted: #94a3b8;
---accent: #38bdf8;
---accent-soft: rgba(56, 189, 248, 0.14);
---ok: #34d399;
---warn: #fbbf24;
---danger: #fb7185;
---shadow: 0 14px 34px rgba(0, 0, 0, 0.42);
---c-temp: #fb923c;
---c-hi: #fb7185;
---c-press: #c084fc;
---c-hum: #22d3ee;
---c-rain: #38bdf8;
---c-wind: #2dd4bf;
---c-astro: #fbbf24;
-}
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
-background: var(--bg-grad) fixed;
-color: var(--text);
-min-height: 100dvh;
-padding-bottom: 40px;
-transition: background 0.35s ease, color 0.25s ease;
-}
-.tabular { font-variant-numeric: tabular-nums; }
-.container { max-width: 1280px; margin: 0 auto; padding: 10px 12px; }
-
-/* Sticky Header */
-.sticky-hdr {
-position: sticky; top: 0; z-index: 40;
-backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-background: var(--surface-strong);
-border-bottom: 1px solid var(--border);
-padding: 8px 12px;
-}
-.hdr-inner {
-max-width: 1280px; margin: 0 auto;
-display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;
-}
-.hdr-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.hdr-title { font-size: 0.98rem; font-weight: 800; letter-spacing: -0.01em; white-space: nowrap; }
-.hdr-sub { font-size: 0.72rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.hdr-temp { font-size: 1.02rem; font-weight: 800; color: var(--c-temp); padding: 3px 8px; border-radius: 999px; background: var(--accent-soft); }
-
-.badge {
-display: inline-flex; align-items: center; gap: 5px;
-font-size: 0.68rem; font-weight: 700; letter-spacing: 0.03em;
-padding: 3px 8px; border-radius: 999px; border: 1px solid var(--border);
-background: var(--surface-elev); color: var(--text); white-space: nowrap;
-}
-.badge-src { font-size: 0.62rem; font-weight: 800; padding: 2px 6px; border-radius: 6px; text-transform: uppercase; }
-.src-sensor { background: rgba(16, 185, 129, 0.16); color: var(--ok); border: 1px solid rgba(16, 185, 129, 0.35); }
-.src-model { background: rgba(2, 132, 199, 0.14); color: var(--accent); border: 1px solid rgba(2, 132, 199, 0.32); }
-.b-ok { color: var(--ok); border-color: rgba(16, 185, 129, 0.35); background: rgba(16, 185, 129, 0.12); }
-.b-warn { color: var(--warn); border-color: rgba(217, 119, 6, 0.4); background: rgba(245, 158, 11, 0.14); }
-.b-crit { color: var(--danger); border-color: rgba(220, 38, 38, 0.45); background: rgba(239, 68, 68, 0.15); }
-
-.btn {
-display: inline-flex; align-items: center; justify-content: center; gap: 5px;
-padding: 6px 10px; border-radius: 10px; border: 1px solid var(--border);
-background: var(--surface-elev); color: var(--text); font-size: 0.76rem; font-weight: 600;
-cursor: pointer; transition: transform 0.12s ease, background 0.15s ease;
-}
-.btn:active { transform: scale(0.97); }
-.btn-primary { background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff; border: none; }
-.btn-ghost { background: transparent; }
-
-.seg { display: inline-flex; padding: 2px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface-elev); }
-.seg button {
-border: none; background: transparent; color: var(--muted); font-size: 0.74rem; font-weight: 700;
-padding: 4px 8px; border-radius: 8px; cursor: pointer;
-}
-.seg button.active { background: var(--accent); color: #fff; }
-
-/* Cards & Bento Grid */
-.card {
-background: var(--surface); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-border: 1px solid var(--border); border-radius: 18px; padding: 14px; box-shadow: var(--shadow);
-}
-.card-tap { cursor: pointer; }
-.card-tap:hover { border-color: var(--accent); }
-.card-hd { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
-.card-lbl { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
-.muted { color: var(--muted); font-size: 0.78rem; }
-
-/* 2-col mobile secondary grid -> multi-col desktop */
-.bento-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
-.bento-3 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
-@media (min-width: 860px) {
-.bento-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.bento-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-}
-
-/* Hazard Alert Banner */
-.hazard-banner {
-border-radius: 18px; border: 1px solid var(--border); background: var(--surface);
-box-shadow: var(--shadow); margin-bottom: 12px; overflow: hidden;
-}
-.hazard-banner.sev-yellow { border-color: rgba(217, 119, 6, 0.5); background: rgba(245, 158, 11, 0.12); }
-.hazard-banner.sev-orange { border-color: rgba(234, 88, 12, 0.55); background: rgba(234, 88, 12, 0.14); }
-.hazard-banner.sev-red { border-color: rgba(220, 38, 38, 0.65); background: rgba(239, 68, 68, 0.16); }
-.hazard-top {
-display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
-padding: 11px 14px; cursor: pointer;
-}
-.pulse-dot {
-width: 8px; height: 8px; border-radius: 50%; background: var(--ok); display: inline-block;
-box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); animation: pulseAnim 2s infinite;
-}
-@keyframes pulseAnim {
-0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.65); }
-70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
-100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-}
-.hazard-body { display: none; padding: 0 14px 14px; border-top: 1px solid var(--border); }
-.hazard-body.open { display: block; padding-top: 12px; }
-.alert-item {
-padding: 10px 12px; border-radius: 12px; background: var(--surface-elev);
-border: 1px solid var(--border); margin-top: 8px; cursor: pointer;
-}
-.alert-detail-box {
-margin-top: 8px; padding: 10px 12px; border-radius: 12px;
-background: var(--surface-strong); border-left: 3px solid var(--accent); font-size: 0.8rem; line-height: 1.45;
-}
-
-/* Hero Nowcast */
-.hero-stage { position: relative; overflow: hidden; margin-bottom: 12px; padding: 18px; }
-.sky-fx { position: absolute; inset: 0; pointer-events: none; opacity: 0.35; }
-.hero-grid { position: relative; z-index: 2; display: grid; grid-template-columns: 1fr; gap: 14px; }
-@media (min-width: 780px) { .hero-grid { grid-template-columns: 1.15fr 0.85fr; align-items: center; } }
-.hero-main { font-size: 3.1rem; font-weight: 900; letter-spacing: -0.04em; line-height: 1; color: var(--c-temp); }
-.hero-summary { font-size: 0.9rem; line-height: 1.45; margin-top: 8px; font-weight: 500; }
-
-/* Hourly Strip */
-.hourly-strip {
-display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px;
-scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;
-}
-.hr-tile {
-flex: 0 0 84px; scroll-snap-align: start;
-background: var(--surface-elev); border: 1px solid var(--border); border-radius: 14px;
-padding: 9px 7px; text-align: center;
-}
-.hr-bar-track { height: 28px; width: 8px; margin: 6px auto; border-radius: 999px; background: rgba(148, 163, 184, 0.2); overflow: hidden; display: flex; align-items: flex-end; }
-.hr-bar-fill { width: 100%; background: var(--c-rain); border-radius: 999px; }
-
-/* Consensus bars */
-.spread-track { height: 10px; border-radius: 999px; background: rgba(148, 163, 184, 0.22); position: relative; margin: 10px 0 6px; }
-.spread-range { position: absolute; top: 0; bottom: 0; border-radius: 999px; background: linear-gradient(90deg, var(--c-rain), var(--c-temp)); }
-.spread-avg { position: absolute; top: -3px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; background: var(--text); border: 3px solid var(--accent); }
-
-/* Tables */
-.scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-table { width: 100%; border-collapse: collapse; font-size: 0.79rem; }
-th, td { padding: 8px 7px; border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap; }
-th { font-size: 0.69rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
-
-/* Bottom Sheet & Modal */
-.sheet-backdrop {
-position: fixed; inset: 0; background: rgba(2, 6, 23, 0.62); backdrop-filter: blur(5px);
-display: none; align-items: flex-end; justify-content: center; z-index: 60;
-}
-@media (min-width: 700px) { .sheet-backdrop { align-items: center; padding: 16px; } }
-.sheet-backdrop.open { display: flex; }
-.sheet-panel {
-width: 100%; max-width: 620px; max-height: 88dvh; overflow-y: auto;
-background: var(--surface-strong); border: 1px solid var(--border);
-border-radius: 22px 22px 0 0; padding: 18px; box-shadow: var(--shadow);
-}
-@media (min-width: 700px) { .sheet-panel { border-radius: 22px; } }
-.field { margin-top: 10px; }
-.field label { display: block; font-size: 0.74rem; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
-.field input, .field select {
-width: 100%; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--border);
-background: var(--surface-elev); color: var(--text); font-size: 0.84rem;
-}
-.kv-row { display: flex; justify-content: space-between; gap: 10px; font-size: 0.8rem; padding: 5px 0; border-bottom: 1px dashed var(--border); }
-.kv-row span { color: var(--muted); }
+:root{--bg:#0b1220;--card:#131c31;--card2:#192540;--txt:#e6edf7;--mut:#8fa3c4;--acc:#38bdf8;--ok:#22c55e;--warn:#f59e0b;--bad:#ef4444;--bdr:#243352}
+body.light{--bg:#eef4fb;--card:#ffffff;--card2:#e2e8f0;--txt:#0f172a;--mut:#475569;--acc:#0284c7;--bdr:#cbd5e1}
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+body{background:var(--bg);color:var(--txt);padding:10px;line-height:1.4}
+.hdr{background:linear-gradient(135deg,#0f294a,#1e3a8a);color:#fff;padding:14px;border-radius:12px;margin-bottom:10px;border:1px solid #2563eb}
+.hdr-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.title{font-size:1.12rem;font-weight:800;letter-spacing:.4px}
+.sub{font-size:.74rem;opacity:.9;margin-top:4px}
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.badge{font-size:.69rem;padding:3px 8px;border-radius:999px;font-weight:700;background:rgba(255,255,255,.15)}
+.b-ok{background:#15803d;color:#fff}.b-warn{background:#b45309;color:#fff}.b-bad{background:#b91c1c;color:#fff}
+.ctrl-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:space-between;background:var(--card);padding:8px 12px;border-radius:10px;border:1px solid var(--bdr);margin-bottom:10px;font-size:.77rem}
+select,button,input[type=text],input[type=password],input[type=number]{background:var(--card2);color:var(--txt);border:1px solid var(--bdr);padding:6px 10px;border-radius:8px;font-size:.77rem}
+button{font-weight:600;cursor:pointer}
+button:active{transform:scale(.97)}
+.btn-pri{background:#0284c7;color:#fff;border-color:#38bdf8}
+.link-btn{display:inline-block;background:var(--card2);color:var(--acc);border:1px solid var(--bdr);padding:6px 10px;border-radius:8px;font-size:.73rem;font-weight:700;text-decoration:none}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:10px}
+.card{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:12px;margin-bottom:10px}
+.card-hdr{display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-weight:700;font-size:.88rem;color:var(--acc)}
+.card-body{margin-top:10px}
+.hidden{display:none}
+.tag{font-size:.6rem;padding:2px 6px;border-radius:4px;font-weight:700;text-transform:uppercase;vertical-align:middle}
+.t-loc{background:#065f46;color:#a7f3d0}.t-cal{background:#1e40af;color:#bfdbfe}.t-mod{background:#6b21a8;color:#e9d5ff}.t-now{background:#9a3412;color:#fed7aa}
+.kv-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kv{background:var(--card2);padding:8px;border-radius:8px}
+.kv-l{font-size:.69rem;color:var(--mut)}.kv-v{font-size:.9rem;font-weight:700;margin-top:2px}
+.f-row{display:flex;flex-direction:column;gap:4px;margin-bottom:8px}
+.f-row label{font-size:.71rem;color:var(--mut);font-weight:600}
+.bar-wrap{height:8px;background:#334155;border-radius:999px;overflow:hidden;margin-top:6px}
+.bar-fill{height:100%;background:linear-gradient(90deg,#22c55e,#eab308,#ef4444);transition:width .4s}
+.h-scroll{display:flex;overflow-x:auto;gap:8px;padding-bottom:6px}
+.h-slot{min-width:88px;background:var(--card2);padding:8px;border-radius:8px;text-align:center;font-size:.74rem;flex-shrink:0}
+.tbl-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;min-width:440px;border-collapse:collapse;font-size:.73rem}
+th,td{padding:6px 5px;border-bottom:1px solid var(--bdr);text-align:left;white-space:nowrap}
+th{color:var(--mut);font-weight:700}
+.adv-item{background:var(--card2);padding:9px;border-radius:8px;margin-bottom:6px;border-left:4px solid var(--warn);cursor:pointer}
+.banner-info{background:#1e3a8a;color:#bfdbfe;padding:8px 12px;border-radius:8px;font-size:.75rem;font-weight:600;margin-bottom:10px;display:none}
+canvas{width:100%;height:125px;background:var(--card2);border-radius:8px;margin-top:6px}
+#radarMap{width:100%;height:260px;border-radius:10px;background:#0f172a;z-index:1}
+.cons-bar{position:relative;height:10px;border-radius:999px;background:linear-gradient(90deg,#38bdf8,#22c55e,#f59e0b);margin:10px 0}
+.cons-dot{position:absolute;top:-4px;width:18px;height:18px;border-radius:50%;background:#fff;border:3px solid #0284c7;transform:translateX(-50%)}
 </style>
 </head>
 <body>
-
-<!-- 1. Sticky Compact Scroll Header -->
-<header class="sticky-hdr">
-<div class="hdr-inner">
-<div class="hdr-left">
-<div>
-<div class="hdr-title" id="hdrStationName">Juan Lookout • San Jose City</div>
-<div class="hdr-sub tabular" id="hdrClock">15.8003°N, 121.0030°E • Syncing...</div>
-</div>
-<span class="hdr-temp tabular" id="hdrTemp">--.-°C</span>
-<span class="badge b-ok" id="connModeBadge">LAN</span>
-</div>
-<div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-<button class="btn btn-ghost" onclick="toggleTheme()" title="Toggle Day/Midnight Theme" id="themeBtn">🌙</button>
-<div class="seg" role="group" aria-label="Unit Toggle">
-<button id="btnC" class="active" onclick="setUnit('C')">°C</button>
-<button id="btnF" onclick="setUnit('F')">°F</button>
-</div>
-<button class="btn" onclick="refreshAll(true)">↻</button>
-<button class="btn btn-primary" onclick="openConfigSheet()">⚙ Config</button>
-</div>
-</div>
-</header>
-
-<main class="container">
-
-<!-- 2. Real-Time Philippine Hazard Alert Banner (PAGASA, NDRRMC, PHIVOLCS) -->
-<section class="hazard-banner sev-yellow" id="hazardBanner">
-<div class="hazard-top" onclick="toggleHazardBanner()">
-<div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-<span class="pulse-dot" id="hazardPulse"></span>
-<strong style="font-size:0.88rem;" id="hazardHeadline">PAGASA / NDRRMC / PHIVOLCS Advisories</strong>
-<span class="badge b-warn" id="baroCrossCheckBadge">Baro Cross-Check: Steady</span>
-</div>
-<div style="display:flex; align-items:center; gap:8px;">
-<span class="muted tabular" id="hazardTimestamps">Issued: -- • Synced: --</span>
-<button class="btn" type="button" id="hazardToggleBtn">Expand ▾</button>
-</div>
-</div>
-<div class="hazard-body" id="hazardBody">
-<div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
-<div style="display:flex; gap:6px; flex-wrap:wrap;">
-<button class="btn btn-primary" onclick="setAgencyFilter('ALL', this)">All</button>
-<button class="btn" onclick="setAgencyFilter('PAGASA', this)">PAGASA</button>
-<button class="btn" onclick="setAgencyFilter('NDRRMC', this)">NDRRMC</button>
-<button class="btn" onclick="setAgencyFilter('PHIVOLCS', this)">PHIVOLCS</button>
-</div>
-<span class="muted" id="hazardCountLbl">3 active bulletins</span>
-</div>
-<div id="hazardList"></div>
-<div class="alert-detail-box" id="hazardReader">
-Tap any advisory above to inspect full bulletin details, affected Nueva Ecija / Central Luzon areas, and recommended local actions without leaving the dashboard.
-</div>
-</div>
-</section>
-
-<!-- 3. Highlighted "Nowcasting" Centerpiece -->
-<section class="card hero-stage" id="heroStage">
-<svg class="sky-fx" viewBox="0 0 800 260" preserveAspectRatio="none">
-<defs>
-<radialGradient id="sunGlow" cx="82%" cy="22%" r="35%">
-<stop offset="0%" stop-color="#fbbf24" stop-opacity="0.7" />
-<stop offset="100%" stop-color="#fbbf24" stop-opacity="0" />
-</radialGradient>
-</defs>
-<rect width="800" height="260" fill="url(#sunGlow)" />
-<ellipse cx="220" cy="70" rx="120" ry="28" fill="#ffffff" opacity="0.25" />
-<ellipse cx="480" cy="95" rx="150" ry="30" fill="#ffffff" opacity="0.18" />
-</svg>
-
-<div class="hero-grid">
-<div>
-<div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
-<span class="badge" id="syncedModelBadge" onclick="openModelBreakdown()" style="cursor:pointer;">
-Synced Model: ECMWF IFS • 98.4% Sensor Match ▸
-</span>
-<span class="badge-src src-sensor">SENSOR + MODEL</span>
-</div>
-<div style="display:flex; align-items:flex-end; gap:14px; flex-wrap:wrap;">
-<div class="hero-main tabular" id="heroTemp">--.-°C</div>
-<div>
-<div style="font-size:0.95rem; font-weight:700;" id="heroCond">Partly Cloudy • Amihan Flow</div>
-<div class="muted tabular" id="heroFeels">Feels Like --.-°C • Dew Point --.-°C</div>
-</div>
-</div>
-<p class="hero-summary" id="heroPlainSummary">
-Warm, breezy conditions around San Jose City with comfortable morning/evening air and low near-term rain risk.
-</p>
+<div class="hdr">
+  <div class="hdr-top">
+    <div>
+      <div class="title" id="hdrStation">JUAN LOOKOUT PHILIPPINES</div>
+      <div class="sub" id="hdrCoords">15.8003302° N, 121.0030307° E • Elev 113m • Asia/Manila (GMT+8)</div>
+    </div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap">
+      <button id="btnUnit" onclick="toggleUnit()">°C / °F</button>
+      <button onclick="openConfig()">⚙ Config</button>
+      <button onclick="toggleTheme()">Theme</button>
+    </div>
+  </div>
+  <div class="badges">
+    <span id="bClock" class="badge">--/--/-- --:-- --</span>
+    <span id="bNet" class="badge">Connecting...</span>
+    <span id="bSensor" class="badge">BME280...</span>
+    <span id="bAlert" class="badge">STABLE</span>
+  </div>
+  <div class="sub" id="bSync" style="margin-top:6px">Last Sync: --</div>
 </div>
 
-<div class="bento-2" style="margin-bottom:0;">
-<div class="card" style="padding:10px;">
-<div class="card-hd" style="margin-bottom:4px;">
-<span class="card-lbl">Wind Rose</span>
-<span class="badge-src src-model">MODEL</span>
-</div>
-<div style="display:flex; align-items:center; gap:10px;">
-<svg width="56" height="56" viewBox="0 0 60 60">
-<circle cx="30" cy="30" r="26" fill="none" stroke="var(--border)" stroke-width="2" />
-<text x="30" y="11" text-anchor="middle" font-size="8" fill="var(--muted)">N</text>
-<g id="windArrowGroup" transform="rotate(45 30 30)">
-<polygon points="30,10 35,34 30,29 25,34" fill="var(--c-wind)" />
-</g>
-</svg>
-<div>
-<div style="font-weight:800; font-size:0.95rem;" class="tabular" id="windMainTxt">14 km/h NE</div>
-<div class="muted tabular" id="windGustTxt">Gusts 24 km/h</div>
-</div>
-</div>
+<div id="modeBanner" class="banner-info"></div>
+
+<div class="ctrl-bar">
+  <div>
+    Refresh:
+    <select id="selRefresh" onchange="setRefreshRate()">
+      <option value="10000" selected>10s (Default)</option>
+      <option value="15000">15s</option>
+      <option value="30000">30s</option>
+      <option value="60000">60s</option>
+      <option value="0">Manual</option>
+    </select>
+  </div>
+  <div style="display:flex;gap:6px">
+    <button onclick="fetchState()">Refresh Now</button>
+    <button id="btnSync" onclick="triggerApiSync()">Sync APIs</button>
+  </div>
 </div>
 
-<div class="card" style="padding:10px;">
-<div class="card-hd" style="margin-bottom:4px;">
-<span class="card-lbl">3h Barometer</span>
-<span class="badge-src src-sensor">SENSOR</span>
-</div>
-<div style="font-weight:800; font-size:0.95rem; color:var(--c-press);" class="tabular" id="slpHeroTxt">1013.2 hPa</div>
-<svg width="100%" height="30" viewBox="0 0 140 30" style="margin-top:4px;">
-<polyline id="heroBaroSpark" fill="none" stroke="var(--c-press)" stroke-width="2.2" points="0,16 45,15 95,14 140,13" />
-</svg>
-</div>
-
-<div class="card" style="padding:10px;">
-<div class="card-hd" style="margin-bottom:4px;">
-<span class="card-lbl">Rain & Cloud</span>
-<span class="badge-src src-model">MODEL</span>
-</div>
-<div style="font-weight:800; font-size:0.92rem; color:var(--c-rain);" class="tabular" id="rainHeroTxt">15% • 0.0 mm/h</div>
-<div class="muted tabular" id="cloudHeroTxt">Cloud Cover 32%</div>
-</div>
-
-<div class="card" style="padding:10px;">
-<div class="card-hd" style="margin-bottom:4px;">
-<span class="card-lbl">UV & Visibility</span>
-<span class="badge-src src-model">MODEL</span>
-</div>
-<div style="font-weight:800; font-size:0.92rem; color:var(--c-astro);" class="tabular" id="uvHeroTxt">UV 4 (Mod)</div>
-<svg width="100%" height="18" viewBox="0 0 120 18">
-<path d="M10,16 A50,50 0 0,1 110,16" fill="none" stroke="rgba(148,163,184,0.25)" stroke-width="4" />
-<path id="uvArcFill" d="M10,16 A50,50 0 0,1 60,6" fill="none" stroke="var(--c-astro)" stroke-width="4" stroke-linecap="round" />
-</svg>
-<div class="muted tabular" id="visHeroTxt">Vis 10.0 km • RH <span id="heroRhVal">--%</span> <span class="badge-src src-sensor">SENSOR</span></div>
-</div>
-</div>
-</div>
-</section>
-
-<!-- 4. Hourly Strip + 14-Agency Consensus + 7-Day Outlook -->
-<section class="card" style="margin-bottom:12px;">
-<div class="card-hd">
-<span class="card-lbl">AccuWeather-Style Hourly Strip (Temp • Rain % • Wind)</span>
-<span class="muted">Scroll horizontally →</span>
-</div>
-<div class="hourly-strip" id="hourlyStrip"></div>
-</section>
-
-<div class="bento-2">
-<section class="card card-tap" onclick="openModelBreakdown()">
-<div class="card-hd">
-<span class="card-lbl">14-Agency Consensus & Spread</span>
-<span class="badge b-ok" id="consensusPctBadge">92% Agreement</span>
-</div>
-<div style="display:flex; justify-content:space-between; font-size:0.8rem;" class="tabular">
-<span>Min: <strong id="spreadMin">--.-°</strong></span>
-<span>Avg: <strong id="spreadAvg">--.-°</strong></span>
-<span>Max: <strong id="spreadMax">--.-°</strong></span>
-</div>
-<div class="spread-track">
-<div class="spread-range" id="spreadRange" style="left:20%; right:20%;"></div>
-<div class="spread-avg" id="spreadAvgDot" style="left:52%;"></div>
-</div>
-<p class="muted">Tap to inspect all 14 global agencies (ECMWF, AIFS, GFS, GraphCast, ICON, JMA, GEM, Meteo-France, UKMO, BOM, CMA, Best Match, MET Norway).</p>
-</section>
-
-<section class="card">
-<div class="card-hd">
-<span class="card-lbl">7-Day Forecast Outlook</span>
-<span class="badge-src src-model">MODEL</span>
-</div>
-<div class="scroll-x">
-<table>
-<thead><tr><th>Day</th><th>Sky</th><th>Low / High</th><th>Rain</th></tr></thead>
-<tbody id="sevenDayBody"></tbody>
-</table>
-</div>
-</section>
+<!-- CONFIGURATION & ESP32 LINK BRIDGE -->
+<div class="card" id="cardConfig" style="border-color:#f59e0b">
+  <div class="card-hdr" onclick="tog('secConfig')"><span>⚙ ESP32 LAN BRIDGE & STATION CONFIGURATION</span><span>▼</span></div>
+  <div id="secConfig" class="card-body hidden">
+    <div style="font-size:.72rem;color:var(--mut);margin-bottom:8px">
+      Set your ESP32's local IP address (default <b>http://192.168.0.229</b>) for live BME280 telemetry on home Wi-Fi. When away from home, this page automatically falls back to live cloud weather, radar, and Philippine hazard feeds.
+    </div>
+    <div class="kv-grid">
+      <div class="f-row"><label>ESP32 Local Base URL</label><input type="text" id="cfgEspUrl" placeholder="http://192.168.0.229"></div>
+      <div class="f-row"><label>Station Title</label><input type="text" id="cfgName"></div>
+      <div class="f-row"><label>Latitude (°N)</label><input type="number" step="0.000001" id="cfgLat"></div>
+      <div class="f-row"><label>Longitude (°E)</label><input type="number" step="0.000001" id="cfgLon"></div>
+      <div class="f-row"><label>Elevation (meters)</label><input type="number" step="0.1" id="cfgElev"></div>
+      <div class="f-row"><label>Temp Calibration Offset (°C)</label><input type="number" step="0.1" id="cfgTOff"></div>
+      <div class="f-row"><label>Pressure Offset (hPa)</label><input type="number" step="0.1" id="cfgPOff"></div>
+      <div class="f-row"><label>Wi-Fi SSID (2.4GHz)</label><input type="text" id="cfgSsid"></div>
+      <div class="f-row"><label>Wi-Fi Password</label><input type="password" id="cfgPass" placeholder="Leave blank to keep current"></div>
+    </div>
+    <hr style="border:0;border-top:1px solid var(--bdr);margin:8px 0">
+    <div class="f-row">
+      <label><input type="checkbox" id="cfgWuEn"> Enable Automatic Weather Underground PWS Upload (Every 5 min)</label>
+    </div>
+    <div class="kv-grid">
+      <div class="f-row"><label>Weather Underground Station ID</label><input type="text" id="cfgWuId" placeholder="e.g. ISANJO45"></div>
+      <div class="f-row"><label>Weather Underground Station Key</label><input type="password" id="cfgWuKey" placeholder="PWS Key"></div>
+      <div class="f-row"><label>Optional OpenWeatherMap API Key</label><input type="text" id="cfgOwm" placeholder="Optional"></div>
+      <div class="f-row"><label>Custom Webhook URL (HTTP POST JSON)</label><input type="text" id="cfgHook" placeholder="https://your-relay/webhook"></div>
+    </div>
+    <div style="font-size:.72rem;color:var(--mut);margin-bottom:8px">Weather Underground Status: <b id="wuStat">--</b></div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <button class="btn-pri" onclick="saveConfig()">Save Configuration</button>
+      <button onclick="testWuUpload()">Test WU / Webhook Upload Now</button>
+    </div>
+  </div>
 </div>
 
-<!-- 5. Weather-Integrated Astronomy & Sky Conditions Hub -->
-<div class="bento-3">
-<section class="card">
-<div class="card-hd">
-<span class="card-lbl">Sun & Moon Horizon Arc</span>
-<span class="badge" id="moonPhaseBadge">🌕 Full / Gibbous</span>
-</div>
-<svg width="100%" height="78" viewBox="0 0 260 78">
-<line x1="12" y1="64" x2="248" y2="64" stroke="var(--border)" stroke-width="1.5" />
-<path d="M24,64 A106,52 0 0,1 236,64" fill="none" stroke="var(--c-astro)" stroke-width="2" stroke-dasharray="4,3" />
-<circle id="sunArcPos" cx="185" cy="22" r="7" fill="var(--c-astro)" />
-</svg>
-<div class="kv-row tabular"><span>Sunrise / Sunset:</span><strong id="sunTimesTxt">05:56 AM / 05:24 PM</strong></div>
-<div class="kv-row tabular"><span>Solar Noon / Golden Hr:</span><strong id="solarNoonTxt">11:40 AM / 04:50 PM</strong></div>
-<div class="kv-row tabular"><span>Moon Illum / Next Full:</span><strong id="moonMetaTxt">88% • ~4d</strong></div>
-</section>
-
-<section class="card">
-<div class="card-hd">
-<span class="card-lbl">Stargazing & Sky Clarity</span>
-<span class="badge b-ok" id="clarityScoreBadge">78 / 100</span>
-</div>
-<div style="font-size:1.75rem; font-weight:900; color:var(--accent);" class="tabular" id="clarityBigNum">78% Clear</div>
-<p class="muted" style="margin-top:4px;" id="clarityReasonTxt">Low cloud cover & stable pressure; moderate humidity.</p>
-<div class="kv-row tabular" style="margin-top:8px;">
-<span>Dew / Lens Condensation:</span>
-<strong id="condensationRiskTxt">Low Risk (Spread 4.2°C)</strong>
-</div>
-</section>
-
-<section class="card">
-<div class="card-hd">
-<span class="card-lbl">Celestial & ISS Tracker</span>
-<span class="badge">LEO PASS</span>
-</div>
-<div class="kv-row tabular"><span>Next Visible ISS Pass:</span><strong id="issPassTxt">Tonight 07:42 PM</strong></div>
-<div class="kv-row tabular"><span>ISS Azimuth / Max El:</span><strong id="issElevTxt">SW → NE • 54°</strong></div>
-<div class="kv-row"><span>Visible Planets:</span><strong>Jupiter, Saturn (Evening)</strong></div>
-<div class="kv-row"><span>Meteor / Event:</span><strong>Geminids approaching peak</strong></div>
-</section>
+<!-- REAL-TIME WEATHER NOWCAST -->
+<div class="card" style="border-color:var(--acc)">
+  <div class="card-hdr" onclick="tog('secNowcast')">
+    <span>REAL-TIME WEATHER NOWCAST</span>
+    <span id="ncConf" class="tag t-now">--</span>
+  </div>
+  <div id="secNowcast" class="card-body">
+    <div id="ncDesc" style="font-size:.9rem;font-weight:700;margin-bottom:8px">Initializing nowcast engine...</div>
+    <div class="kv-grid">
+      <div class="kv"><div class="kv-l">Temperature <span class="tag t-loc" id="tagTempSrc">LOCAL SENSOR</span></div><div class="kv-v" id="ncTemp">--</div></div>
+      <div class="kv"><div class="kv-l">Heat Index <span class="tag t-cal">PAGASA</span></div><div class="kv-v" id="ncHI">--</div></div>
+      <div class="kv"><div class="kv-l">Humidity / Dew Pt <span class="tag t-loc">TELEMETRY</span></div><div class="kv-v" id="ncHumDew">--</div></div>
+      <div class="kv"><div class="kv-l">SLP / Diurnal Anom <span class="tag t-cal">TROPICAL</span></div><div class="kv-v" id="ncPress">--</div></div>
+      <div class="kv"><div class="kv-l">Rain Likelihood <span class="tag t-now">NOWCAST</span></div><div class="kv-v" id="ncRainProb">--</div></div>
+      <div class="kv"><div class="kv-l">Thunderstorm Risk <span class="tag t-now">NOWCAST</span></div><div class="kv-v" id="ncTstorm">--</div></div>
+      <div class="kv"><div class="kv-l">Wind / Gusts <span class="tag t-mod">MODEL EST.</span></div><div class="kv-v" id="ncWind">--</div></div>
+      <div class="kv"><div class="kv-l">Cloud / UV / Vis <span class="tag t-mod">MODEL EST.</span></div><div class="kv-v" id="ncSky">--</div></div>
+    </div>
+    <div style="font-size:.71rem;color:var(--mut);margin:8px 0 4px">NOWCASTING TIMELINE (NOW to +6 HOURS)</div>
+    <div id="ncTimeline" class="h-scroll"></div>
+  </div>
 </div>
 
-<!-- 7. Data Integrity & NVS Vault Card -->
-<section class="card">
-<div class="card-hd">
-<span class="card-lbl">Data Integrity & NVS Vault (Power-Loss Fail-Safe)</span>
-<span class="badge b-ok" id="nvsHealthBadge">NVS Rolling Snapshot OK</span>
-</div>
-<div class="bento-2" style="margin-bottom:0;">
-<div>
-<div class="kv-row tabular"><span>Recovered Post-Reboot Records:</span><strong id="nvsRecoveredTxt">144 (10m) • 48 (30m)</strong></div>
-<div class="kv-row tabular"><span>Sensor Gap Guard (NaN/0 Filter):</span><strong id="gapGuardTxt">Active • 0 invalid spikes</strong></div>
-</div>
-<div>
-<div class="kv-row tabular"><span>AI Baseline & Weights Backup:</span><strong id="aiVaultTxt">Synced to NVS + RTC</strong></div>
-<div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
-<button class="btn btn-primary" onclick="exportDataset('csv')">⬇ Export AI Dataset (CSV)</button>
-<button class="btn" onclick="exportDataset('json')">⬇ Export JSON</button>
-</div>
-</div>
-</div>
-</section>
-
-</main>
-
-<!-- 6. PIN-Protected Config Bottom Sheet -->
-<div class="sheet-backdrop" id="configBackdrop" onclick="if(event.target===this)closeConfigSheet()">
-<div class="sheet-panel">
-<div class="card-hd">
-<span class="card-lbl">Station Config & Diagnostics (PIN: 1234)</span>
-<button class="btn" onclick="closeConfigSheet()">✕</button>
+<!-- IN-DASHBOARD LIVE DOPPLER RADAR & HIMAWARI SATELLITE MAP -->
+<div class="card" style="border-color:#38bdf8">
+  <div class="card-hdr" onclick="tog('secLiveMap')">
+    <span>LIVE DOPPLER RADAR & SATELLITE MAP (IN-DASHBOARD)</span>
+    <span class="tag t-mod">LIVE LAYER</span>
+  </div>
+  <div id="secLiveMap" class="card-body">
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;align-items:center;justify-content:space-between">
+      <div style="display:flex;gap:5px;flex-wrap:wrap">
+        <button class="btn-pri" id="btnRadLayer" onclick="setMapLayer('radar')">Doppler Radar</button>
+        <button id="btnSatLayer" onclick="setMapLayer('sat')">IR Satellite</button>
+        <button id="btnRadPlay" onclick="toggleRadarAnim()">▶ Animate</button>
+      </div>
+      <span id="radFrameTime" style="font-size:.71rem;color:var(--acc)">Loading radar frames...</span>
+    </div>
+    <div id="radarMap"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px" id="radLinks"></div>
+  </div>
 </div>
 
-<div id="pinGate">
-<p class="muted">Enter station PIN to unlock Wi-Fi NVS slots, cloud bridge endpoints, and remote reboot.</p>
-<div class="field">
-<label>Access PIN</label>
-<input type="password" id="pinInput" maxlength="8" placeholder="Default: 1234" value="1234" />
-</div>
-<button class="btn btn-primary" style="margin-top:10px;" onclick="unlockConfig()">Unlock Config</button>
-</div>
-
-<div id="configUnlocked" style="display:none;">
-<div class="card-lbl" style="margin-top:6px;">Multi-Wi-Fi NVS Failover (Up to 3 SSIDs)</div>
-<div class="field"><label>Slot 1 SSID (Primary)</label><input type="text" id="cfgSsid1" value="JDFam_2.4G" /></div>
-<div class="field"><label>Slot 1 Password</label><input type="password" id="cfgPass1" placeholder="••••••••" /></div>
-<div class="field"><label>Slot 2 SSID (Backup)</label><input type="text" id="cfgSsid2" placeholder="Optional backup SSID" /></div>
-<div class="field"><label>Slot 3 SSID (Fallback)</label><input type="text" id="cfgSsid3" placeholder="Optional fallback SSID" /></div>
-
-<div class="card-lbl" style="margin-top:14px;">Cloud Relay & Polling</div>
-<div class="field"><label>Cloud Relay Endpoint (MQTT / Firebase / Webhook)</label><input type="text" id="cfgCloudUrl" placeholder="https://your-relay.example.com/telemetry" /></div>
-<div class="field">
-<label>Polling Interval</label>
-<select id="cfgInterval">
-<option value="15000">15 seconds</option>
-<option value="30000">30 seconds</option>
-<option value="60000" selected>60 seconds</option>
-<option value="300000">5 minutes</option>
-</select>
+<!-- REAL-TIME OFFICIAL PHILIPPINE ADVISORY CENTER -->
+<div class="card" style="border-color:#f59e0b">
+  <div class="card-hdr" onclick="tog('secAdv')"><span>REAL-TIME PHILIPPINE ADVISORY CENTER (PAGASA / GDACS / PHIVOLCS)</span><span>▼</span></div>
+  <div id="secAdv" class="card-body">
+    <div id="advStatus" style="font-size:.72rem;color:var(--acc);margin-bottom:6px">--</div>
+    <div id="advList"></div>
+  </div>
 </div>
 
-<div class="card-lbl" style="margin-top:14px;">Live Diagnostics</div>
-<div class="kv-row tabular"><span>Active Mode:</span><strong id="diagMode">LAN (192.168.0.229)</strong></div>
-<div class="kv-row tabular"><span>Wi-Fi RSSI / Uptime:</span><strong id="diagRssi">-54 dBm • 4h 12m</strong></div>
-<div class="kv-row tabular"><span>Free Heap / Reset:</span><strong id="diagHeap">182 KB • Power-On</strong></div>
+<!-- LOCAL VS MODEL + EARLY WARNING CENTER -->
+<div class="grid">
+  <div class="card">
+    <div class="card-hdr" onclick="tog('secCmp')"><span>LOCAL SENSOR VS. MODEL COMPARISON</span><span>▼</span></div>
+    <div id="secCmp" class="card-body">
+      <div id="cmpClosest" style="font-size:.75rem;color:var(--acc);margin-bottom:6px">Closest Model: --</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Parameter</th><th>Local BME280</th><th>Model Est.</th><th>Diff</th></tr></thead>
+          <tbody id="cmpBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 
-<div style="display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;">
-<button class="btn btn-primary" onclick="saveConfigSheet()">Save to NVS</button>
-<button class="btn" style="border-color:rgba(220,38,38,0.45); color:var(--danger);" onclick="softRebootEsp()">⏻ Soft Reboot ESP32</button>
-</div>
-</div>
-</div>
+  <div class="card">
+    <div class="card-hdr" onclick="tog('secEwc')"><span>EARLY WARNING CENTER</span><span>▼</span></div>
+    <div id="secEwc" class="card-body">
+      <div class="kv" style="margin-bottom:6px"><div class="kv-l">1. Official Hazard & Seismic Feed</div><div class="kv-v" id="ewcGov">--</div></div>
+      <div class="kv" style="margin-bottom:6px"><div class="kv-l">2. Online Model Convective/Rain Signals</div><div class="kv-v" id="ewcMod">--</div></div>
+      <div class="kv"><div class="kv-l">3. Local BME280 Barometric & Thermal Alerts</div><div class="kv-v" id="ewcLoc">--</div></div>
+    </div>
+  </div>
 </div>
 
-<!-- 14-Agency Consensus Drawer -->
-<div class="sheet-backdrop" id="modelBackdrop" onclick="if(event.target===this)closeModelBreakdown()">
-<div class="sheet-panel">
-<div class="card-hd">
-<span class="card-lbl">14 Global Weather Models vs. BME280</span>
-<button class="btn" onclick="closeModelBreakdown()">✕</button>
+<!-- CORE SENSOR & WIND/RAIN -->
+<div class="grid">
+  <div class="card">
+    <div class="card-hdr" onclick="tog('secCore')"><span>CORE SENSOR & TROPICAL BAROMETER</span><span>▼</span></div>
+    <div id="secCore" class="card-body">
+      <svg width="130" height="72" viewBox="0 0 120 70" style="display:block;margin:0 auto">
+        <path d="M10,60 A50,50 0 0,1 110,60" fill="none" stroke="#334155" stroke-width="10" stroke-linecap="round"/>
+        <path id="gHumArc" d="M10,60 A50,50 0 0,1 110,60" fill="none" stroke="#38bdf8" stroke-width="10" stroke-linecap="round" stroke-dasharray="157" stroke-dashoffset="157"/>
+        <text id="gHumTxt" x="60" y="55" text-anchor="middle" fill="currentColor" font-size="14" font-weight="bold">--%</text>
+      </svg>
+      <div class="kv-grid">
+        <div class="kv"><div class="kv-l">Raw vs Filtered Temp</div><div class="kv-v" id="cTempRF">--</div></div>
+        <div class="kv"><div class="kv-l">Daily Min / Max</div><div class="kv-v" id="cTempMM">--</div></div>
+        <div class="kv"><div class="kv-l">Raw Station Pressure</div><div class="kv-v" id="cPressRaw">--</div></div>
+        <div class="kv"><div class="kv-l">1h / 3h Slope</div><div class="kv-v" id="cSlope">--</div></div>
+      </div>
+      <div class="bar-wrap"><div id="hiBar" class="bar-fill" style="width:20%"></div></div>
+      <div id="cIntel" style="font-size:.72rem;color:var(--mut);margin-top:6px">--</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hdr" onclick="tog('secWindRain')"><span>WIND COMPASS ROSE & RAINFALL BENCHMARK <span class="tag t-mod">MODEL</span></span><span>▼</span></div>
+    <div id="secWindRain" class="card-body">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <svg width="96" height="96" viewBox="0 0 100 100" style="flex-shrink:0">
+          <circle cx="50" cy="50" r="44" fill="none" stroke="#334155" stroke-width="3"/>
+          <text x="50" y="14" text-anchor="middle" fill="#8fa3c4" font-size="10" font-weight="bold">N</text>
+          <text x="88" y="54" text-anchor="middle" fill="#8fa3c4" font-size="10" font-weight="bold">E</text>
+          <text x="50" y="94" text-anchor="middle" fill="#8fa3c4" font-size="10" font-weight="bold">S</text>
+          <text x="12" y="54" text-anchor="middle" fill="#8fa3c4" font-size="10" font-weight="bold">W</text>
+          <g id="windArrow" transform="rotate(0 50 50)">
+            <polygon points="50,16 44,54 50,48 56,54" fill="#38bdf8"/>
+          </g>
+        </svg>
+        <div class="kv-grid" style="flex:1;min-width:180px">
+          <div class="kv"><div class="kv-l">Wind Dir / Speed</div><div class="kv-v" id="wrWind">--</div></div>
+          <div class="kv"><div class="kv-l">Peak Wind Gusts</div><div class="kv-v" id="wrGust">--</div></div>
+          <div class="kv"><div class="kv-l">Hourly Rain Rate</div><div class="kv-v" id="wrRate">--</div></div>
+          <div class="kv"><div class="kv-l">Daily Rain vs 10mm</div><div class="kv-v" id="wrDaily">--</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-<div class="scroll-x">
-<table>
-<thead><tr><th>Agency / Model</th><th>Temp</th><th>Rain %</th><th>SLP</th><th>Match</th></tr></thead>
-<tbody id="modal14Body"></tbody>
-</table>
+
+<!-- 15-AGENCY & AI CONSENSUS + FULL MODEL TABLE -->
+<div class="card">
+  <div class="card-hdr" onclick="tog('secMod')"><span>MULTI-AGENCY & AI ENSEMBLE CONSENSUS (ECMWF, WEATHERNEXT 3, AIGFS, JMA, MET.NO)</span><span>▼</span></div>
+  <div id="secMod" class="card-body">
+    <div id="modSummary" style="font-size:.76rem;font-weight:700">--</div>
+    <div class="cons-bar"><div id="consDot" class="cons-dot" style="left:50%"></div></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Model</th><th>Type</th><th>Temp</th><th>SLP</th><th>Rain</th><th>Wind</th><th>Wt / MAE</th></tr></thead>
+        <tbody id="modBody"></tbody>
+      </table>
+    </div>
+  </div>
 </div>
+
+<!-- HOURLY & 14-DAY OUTLOOK -->
+<div class="card">
+  <div class="card-hdr" onclick="tog('secFcst')"><span>ACCUWEATHER-STYLE HOURLY STRIP & 14-DAY OUTLOOK</span><span>▼</span></div>
+  <div id="secFcst" class="card-body">
+    <div style="margin-bottom:6px">
+      <button onclick="setStepMode(1)">1-Hour Steps</button>
+      <button onclick="setStepMode(3)">3-Hour Steps</button>
+    </div>
+    <div id="hourlyScroll" class="h-scroll" style="margin-bottom:10px"></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Date</th><th>Min / Max</th><th>Rain %</th><th>Rain mm</th><th>UV Max</th></tr></thead>
+        <tbody id="dailyBody"></tbody>
+      </table>
+    </div>
+  </div>
 </div>
+
+<!-- SUN & MOON HORIZON ARC + CELESTIAL & ISS TRACKER + TIDES -->
+<div class="grid">
+  <div class="card">
+    <div class="card-hdr" onclick="tog('secAstro')"><span>SUN & MOON HORIZON ARC + COASTAL TIDES</span><span>▼</span></div>
+    <div id="secAstro" class="card-body">
+      <svg width="100%" height="78" viewBox="0 0 240 75" style="display:block;margin:0 auto 6px">
+        <line x1="15" y1="62" x2="225" y2="62" stroke="#334155" stroke-width="2"/>
+        <path d="M25,62 A95,52 0 0,1 215,62" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4 3"/>
+        <circle id="sunArcDot" cx="120" cy="10" r="6" fill="#f59e0b"/>
+      </svg>
+      <div class="kv-grid" id="astroGrid"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hdr" onclick="tog('secIss')"><span>CELESTIAL, STARGAZING & ISS PASS TRACKER</span><span>▼</span></div>
+    <div id="secIss" class="card-body">
+      <div class="kv-grid" id="issGrid"></div>
+      <div id="tropContext" style="font-size:.74rem;color:var(--mut);margin-top:8px">--</div>
+      <div id="tropLog" style="font-size:.71rem;color:var(--acc);margin-top:4px">--</div>
+    </div>
+  </div>
+</div>
+
+<!-- 24-HOUR SENSOR HISTORY & PLAYBACK -->
+<div class="card">
+  <div class="card-hdr" onclick="tog('secHist')"><span>24-HOUR SENSOR HISTORY (TEMP & SLP CHARTS) & PLAYBACK</span><span>▼</span></div>
+  <div id="secHist" class="card-body">
+    <div style="font-size:.7rem;color:var(--mut)">Filtered Temperature</div>
+    <canvas id="tempCanvas" width="600" height="120"></canvas>
+    <div style="font-size:.7rem;color:var(--mut);margin-top:6px">Sea-Level Barometric Pressure (hPa)</div>
+    <canvas id="pressCanvas" width="600" height="120"></canvas>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:.75rem">
+      <button onclick="stepPlay(-1)">◀ Step</button>
+      <input id="playRange" type="range" min="0" max="0" value="0" style="flex:1" oninput="renderPlayIdx(this.value)">
+      <button onclick="stepPlay(1)">Step ▶</button>
+    </div>
+    <div id="playReadout" style="font-size:.74rem;color:var(--acc);margin-top:4px">Connect to ESP32 LAN for 24h sensor playback.</div>
+  </div>
+</div>
+
+<!-- NVS VAULT, EXPORTS & DIAGNOSTICS -->
+<div class="card">
+  <div class="card-hdr" onclick="tog('secDiag')"><span>DATA INTEGRITY, NVS POWER-LOSS VAULT & EXPORTS</span><span>▼</span></div>
+  <div id="secDiag" class="card-body">
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+      <button class="btn-pri" onclick="exportData('csv')">Export AI Dataset (CSV)</button>
+      <button onclick="exportData('json')">Export JSON</button>
+      <button onclick="triggerNvsSave()">Save NVS Snapshot</button>
+    </div>
+    <div id="diagText" style="font-size:.73rem;color:var(--mut);white-space:pre-line">--</div>
+  </div>
 </div>
 
 <script>
-const ESP32_IP = '192.168.0.229';
-const ESP32_BASE_URL = http://${ESP32_IP}`;
+var timerId = null;
+var histData = [];
+var hourlyCache = [];
+var stepStride = 1;
+var cfgLoaded = false;
+var useF = false;
+var lanConnected = false;
+var lastStateCache = null;
 
-const STATE = {
-unit: localStorage.getItem('jl_unit') || 'C',
-theme: localStorage.getItem('jl_theme') || 'auto',
-agencyFilter: 'ALL',
-pollMs: 60000,
-cloudRelayUrl: localStorage.getItem('jl_cloud_url') || '',
-connMode: 'LAN',
-telemetry: null,
-models14: [],
-hourly: [],
-daily: []
+var DEFAULT_CFG = {
+  espUrl: localStorage.getItem('jl_esp_url') || 'http://192.168.0.229',
+  name:   localStorage.getItem('jl_name')    || 'JUAN LOOKOUT PHILIPPINES',
+  lat:    parseFloat(localStorage.getItem('jl_lat'))  || 15.8003302,
+  lon:    parseFloat(localStorage.getItem('jl_lon'))  || 121.0030307,
+  elev:   parseFloat(localStorage.getItem('jl_elev')) || 113.0
 };
 
-const MOCK_TELEMETRY = {
-stationName: 'Juan Lookout • San Jose City',
-lat: 15.8003302,
-lon: 121.0030307,
-tempC: 29.4,
-humPct: 74,
-dewC: 24.2,
-hiC: 33.1,
-slpHpa: 1013.4,
-d3hP: -0.4,
-windKmh: 14,
-windDirDeg: 45,
-gustKmh: 24,
-rainProb: 20,
-rainMmH: 0.0,
-cloudCoverPct: 34,
-uvIndex: 5,
-visibilityKm: 10.0,
-syncedModel: 'ECMWF IFS 9km',
-sensorMatchPct: 98.6,
-aiSteps: 148,
-nvsRecovered10m: 144,
-nvsRecovered30m: 48,
-wifiRssi: -53,
-ipAddr: ESP32_IP,
-uptimeStr: '3d 14h 22m',
-freeHeapKb: 184.5,
-resetReason: 'Power-On',
-sunrise: '05:56 AM',
-sunset: '05:24 PM',
-solarNoon: '11:40 AM',
-goldenHour: '04:50 PM',
-moonPhase: '🌔 Waxing Gibbous',
-moonIllum: 86,
-nextLunarEvent: 'Full Moon in 3d',
-issPass: 'Tonight 07:42 PM',
-issGeom: 'SW → NE • 54°',
-issuedTs: '25 Nov 2026 05:00 PM PHST',
-syncedTs: new Date().toLocaleTimeString(),
-baroSpark: [1014.1, 1013.9, 1013.7, 1013.5, 1013.4],
-alerts: [
-{
-agency: 'PAGASA',
-severity: 'yellow',
-tier: 'Yellow Rainfall / Thunderstorm Watch',
-title: 'PAGASA — Local Thunderstorm & Shear Line Advisory (Luzon)',
-issued: '25 Nov 2026 04:30 PM PHST',
-areas: 'San Jose City, Lupao, Carranglan, Rizal, and Sierra Madre / Caraballo foothills',
-detail: 'Light to moderate rain showers with occasional lightning and gusty winds may affect parts of Nueva Ecija during afternoon/evening convective buildup.',
-actions: 'Monitor local drainage near creeks/low roads; secure light outdoor items during gusts.'
-},
-{
-agency: 'NDRRMC',
-severity: 'yellow',
-tier: 'Preparedness Advisory',
-title: 'NDRRMC — Regional Weather & Flood Preparedness Notice',
-issued: '25 Nov 2026 02:00 PM PHST',
-areas: 'Region III (Central Luzon) — Nueva Ecija',
-detail: 'LDRRMCs advised to maintain heightened situational awareness and coordinate barangay monitoring along river tributaries.',
-actions: 'Keep emergency go-bag, flashlight, and weather alerts accessible.'
-},
-{
-agency: 'PHIVOLCS',
-severity: 'normal',
-tier: 'Baseline Monitoring',
-title: 'PHIVOLCS — Tectonic & Inland Seismic Status',
-issued: '25 Nov 2026 12:00 PM PHST',
-areas: 'San Jose City, Nueva Ecija (Inland)',
-detail: 'No active volcano alert in immediate vicinity; inland seismic network operating normally.',
-actions: 'Review DUCK, COVER, AND HOLD protocols with household.'
-}
- ],
-models14: [
-{ name: 'ECMWF IFS 9km', tempC: 29.3, rainProb: 18, slpHpa: 1013.5, match: 98.6 },
-{ name: 'ECMWF IFS 0.25', tempC: 29.5, rainProb: 20, slpHpa: 1013.4, match: 97.9 },
-{ name: 'ECMWF AIFS (AI)', tempC: 29.2, rainProb: 15, slpHpa: 1013.6, match: 98.1 },
-{ name: 'NOAA GFS', tempC: 30.1, rainProb: 25, slpHpa: 1012.8, match: 95.4 },
-{ name: 'GraphCast (AI)', tempC: 29.4, rainProb: 18, slpHpa: 1013.3, match: 97.5 },
-{ name: 'DWD ICON', tempC: 29.6, rainProb: 22, slpHpa: 1013.2, match: 96.8 },
-{ name: 'JMA GSM', tempC: 29.1, rainProb: 15, slpHpa: 1013.8, match: 96.2 },
-{ name: 'CMC GEM', tempC: 29.8, rainProb: 24, slpHpa: 1013.0, match: 95.8 },
-{ name: 'Meteo-France', tempC: 29.4, rainProb: 20, slpHpa: 1013.4, match: 96.5 },
-{ name: 'UKMO Global', tempC: 29.7, rainProb: 21, slpHpa: 1013.1, match: 96.0 },
-{ name: 'BOM ACCESS-G', tempC: 29.2, rainProb: 16, slpHpa: 1013.6, match: 95.9 },
-{ name: 'CMA GRAPES', tempC: 29.9, rainProb: 25, slpHpa: 1012.9, match: 95.2 },
-{ name: 'OM Best Match', tempC: 29.4, rainProb: 20, slpHpa: 1013.4, match: 98.2 },
-{ name: 'MET Norway', tempC: 29.3, rainProb: 18, slpHpa: 1013.5, match: 97.1 }
- ],
-hourly: Array.from({ length: 12 }, (_, i) => {
-const hr = (new Date().getHours() + i) % 24;
-const lbl = (hr % 12 || 12) + (hr >= 12 ? ' PM' : ' AM');
-const wave = Math.sin(((hr - 6) / 24) * Math.PI * 2);
-const tC = 27.5 + wave * 3.8 + (i === 0 ? 0.4 : 0);
-return {
-label: i === 0 ? 'Now' : lbl,
-tempC: Number(tC.toFixed(1)),
-rainProb: Math.max(5, Math.min(85, Math.round(18 + (i % 4) * 9))),
-windKmh: Math.round(12 + Math.cos(i * 0.6) * 4),
-windDeg: 45 + i * 5
-};
-}),
-daily: [
-{ day: 'Thu', sky: 'Partly Cloudy', lowC: 23, highC: 32, rainProb: 25 },
-{ day: 'Fri', sky: 'Scattered Showers', lowC: 23, highC: 31, rainProb: 55 },
-{ day: 'Sat', sky: 'Passing Clouds', lowC: 22, highC: 31, rainProb: 30 },
-{ day: 'Sun', sky: 'Sunny Intervals', lowC: 22, highC: 32, rainProb: 15 },
-{ day: 'Mon', sky: 'Warm & Breezy', lowC: 23, highC: 33, rainProb: 20 },
-{ day: 'Tue', sky: 'Afternoon T-Storm', lowC: 23, highC: 31, rainProb: 60 },
-{ day: 'Wed', sky: 'Partly Cloudy', lowC: 22, highC: 32, rainProb: 25 }
- ]
-};
+var HI_NAMES = ["Not Hazardous (<27°C)","Caution (27-32°C)","Extreme Caution (33-41°C)","Danger (42-51°C)","Extreme Danger (≥52°C)"];
+var rMap = null, rMarker = null, rTileLayer = null, rFrames = [], rIdx = 0, rAnimTimer = null, rMode = 'radar', rHost = 'https://tilecache.rainviewer.com';
 
-function fmtTemp(c, withUnit = true) {
-if (c === null || c === undefined || Number.isNaN(c)) return '--.-';
-const val = STATE.unit === 'F' ? (c * 1.8 + 32) : c;
-return val.toFixed(1) + (withUnit ? ('°' + STATE.unit) : '°');
+function getEspBase(){
+  return (localStorage.getItem('jl_esp_url') || 'http://192.168.0.229').replace(/\/+$/, '');
+}
+function fmtT(c){
+  if(isNaN(c) || c === null) return '--';
+  return useF ? ((c * 1.8 + 32).toFixed(1) + '°F') : (c.toFixed(1) + '°C');
+}
+function toggleUnit(){ useF = !useF; if(lastStateCache) renderDashboard(lastStateCache); }
+function tog(id){ document.getElementById(id).classList.toggle('hidden'); }
+function openConfig(){
+  var el = document.getElementById('secConfig');
+  el.classList.remove('hidden');
+  el.scrollIntoView({behavior:'smooth'});
+}
+function toggleTheme(){ document.body.classList.toggle('light'); }
+function setStepMode(s){ stepStride = s; renderHourly(); }
+
+function setRefreshRate(){
+  if(timerId) clearInterval(timerId);
+  var ms = parseInt(document.getElementById('selRefresh').value,10);
+  if(ms > 0) timerId = setInterval(fetchState, ms);
 }
 
-function setUnit(u) {
-STATE.unit = u;
-localStorage.setItem('jl_unit', u);
-document.getElementById('btnC').classList.toggle('active', u === 'C');
-document.getElementById('btnF').classList.toggle('active', u === 'F');
-if (STATE.telemetry) renderAll(STATE.telemetry);
+function initRadarMap(lat, lon){
+  if(typeof L === 'undefined'){
+    document.getElementById('radarMap').innerHTML = '<div style="padding:20px;text-align:center;font-size:.78rem;color:#8fa3c4">Offline Mode: Live map tiles require internet access.</div>';
+    return;
+  }
+  if(!rMap){
+    rMap = L.map('radarMap').setView([lat, lon], 8);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap &copy; CARTO', maxZoom: 14
+    }).addTo(rMap);
+    rMarker = L.circleMarker([lat, lon], {radius:7, color:'#38bdf8', fillColor:'#0284c7', fillOpacity:0.9}).addTo(rMap);
+    rMarker.bindPopup('<b>JUAN LOOKOUT PH</b><br>Station Location');
+    loadRainViewerFrames();
+  } else {
+    rMarker.setLatLng([lat, lon]);
+  }
 }
 
-function applyThemeMode() {
-let mode = STATE.theme;
-if (mode === 'auto') {
-const hr = new Date().getHours();
-mode = (hr >= 6 && hr < 18) ? 'day' : 'night';
-}
-document.documentElement.setAttribute('data-theme', mode);
-document.getElementById('themeBtn').textContent = mode === 'night' ? '☀️' : '🌙';
-}
-
-function toggleTheme() {
-const cur = document.documentElement.getAttribute('data-theme');
-STATE.theme = cur === 'night' ? 'day' : 'night';
-localStorage.setItem('jl_theme', STATE.theme);
-applyThemeMode();
-}
-
-function degToDir(deg) {
-const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-return dirs[Math.round((((deg % 360) + 360) % 360) / 45) % 8];
+function loadRainViewerFrames(){
+  fetch('https://api.rainviewer.com/public/weather-maps.json')
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      rHost = data.host || 'https://tilecache.rainviewer.com';
+      rFrames = (rMode === 'radar') ? (data.radar && data.radar.past ? data.radar.past : []) :
+                                      (data.satellite && data.satellite.infrared ? data.satellite.infrared : []);
+      if(rFrames.length > 0){
+        rIdx = rFrames.length - 1;
+        applyRadarFrame(rIdx);
+      }
+    }).catch(function(){
+      document.getElementById('radFrameTime').textContent = 'Radar feed offline';
+    });
 }
 
-function toggleHazardBanner(forceOpen) {
-const body = document.getElementById('hazardBody');
-const open = typeof forceOpen === 'boolean' ? forceOpen : !body.classList.contains('open');
-body.classList.toggle('open', open);
-document.getElementById('hazardToggleBtn').textContent = open ? 'Collapse ▴' : 'Expand ▾';
+function applyRadarFrame(idx){
+  if(!rMap || !rFrames[idx]) return;
+  var f = rFrames[idx];
+  if(rTileLayer) rMap.removeLayer(rTileLayer);
+  var tileUrl = (rMode === 'radar') ? (rHost + f.path + '/256/{z}/{x}/{y}/2/1_1.png') :
+                                      (rHost + f.path + '/256/{z}/{x}/{y}/0/0_0.png');
+  rTileLayer = L.tileLayer(tileUrl, {opacity: 0.72, zIndex: 10}).addTo(rMap);
+  var dt = new Date(f.time * 1000);
+  document.getElementById('radFrameTime').textContent = (rMode==='radar'?'Radar: ':'IR Sat: ') + dt.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
 }
 
-function setAgencyFilter(agency, btn) {
-STATE.agencyFilter = agency;
-btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('btn-primary'));
-btn.classList.add('btn-primary');
-renderHazards(STATE.telemetry);
+function setMapLayer(mode){
+  rMode = mode;
+  document.getElementById('btnRadLayer').className = (mode==='radar') ? 'btn-pri' : '';
+  document.getElementById('btnSatLayer').className = (mode==='sat') ? 'btn-pri' : '';
+  loadRainViewerFrames();
 }
 
-function renderHazards(d) {
-const banner = document.getElementById('hazardBanner');
-banner.classList.remove('sev-yellow', 'sev-orange', 'sev-red');
-const allAlerts = d.alerts || [];
-const hasRed = allAlerts.some(a => a.severity === 'red');
-const hasOrange = allAlerts.some(a => a.severity === 'orange');
-const hasYellow = allAlerts.some(a => a.severity === 'yellow');
-if (hasRed) banner.classList.add('sev-red');
-else if (hasOrange) banner.classList.add('sev-orange');
-else if (hasYellow) banner.classList.add('sev-yellow');
-
-if (hasRed || hasOrange || hasYellow) toggleHazardBanner(true);
-
-const baroBadge = document.getElementById('baroCrossCheckBadge');
-if (d.d3hP <= -1.6) {
-baroBadge.textContent = Baro Cross-Check: Drop (${d.d3hP.toFixed(1)} hPa/3h); baroBadge.className = 'badge b-crit'; } else { baroBadge.textContent =Baro Cross-Check: Steady ( {d.d3hP.toFixed(1)} hPa/3h)`;
-baroBadge.className = 'badge b-ok';
+function toggleRadarAnim(){
+  var btn = document.getElementById('btnRadPlay');
+  if(rAnimTimer){
+    clearInterval(rAnimTimer);
+    rAnimTimer = null;
+    btn.textContent = '▶ Animate';
+  } else {
+    btn.textContent = '⏸ Pause';
+    rAnimTimer = setInterval(function(){
+      if(rFrames.length === 0) return;
+      rIdx = (rIdx + 1) % rFrames.length;
+      applyRadarFrame(rIdx);
+    }, 650);
+  }
 }
 
-document.getElementById('hazardTimestamps').textContent = Issued: ${d.issuedTs} • Synced: ${d.syncedTs};
-document.getElementById('hazardPulse').style.animation = 'none';
-void document.getElementById('hazardPulse').offsetWidth;
-document.getElementById('hazardPulse').style.animation = 'pulseAnim 2s infinite';
-
-const filtered = STATE.agencyFilter === 'ALL'
-? allAlerts
-: allAlerts.filter(a => a.agency === STATE.agencyFilter);
-
-document.getElementById('hazardCountLbl').textContent = ${filtered.length} bulletin(s); const listEl = document.getElementById('hazardList'); listEl.innerHTML = filtered.map((a, idx) =&gt;
-<div class="alert-item" onclick="selectAlert(${idx})"&gt; &lt;div style="display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap;"&gt; &lt;strong&gt;[${a.agency}] ${a.title}&lt;/strong&gt; &lt;span class="badge ${a.severity === 'red' ? 'b-crit' : (a.severity === 'yellow' || a.severity === 'orange' ? 'b-warn' : 'b-ok')}">${a.tier}&lt;/span&gt; &lt;/div&gt; &lt;div class="muted tabular" style="margin-top:3px;"&gt;Issued: ${a.issued} • Areas: ${a.areas}&lt;/div&gt; &lt;/div&gt;).join('') || '<div class="muted" style="margin-top:8px;">No bulletins for selected agency.</div>';
-
-window._activeFilteredAlerts = filtered;
+function triggerApiSync(){
+  var btn = document.getElementById('btnSync');
+  btn.textContent = 'Syncing...';
+  if(lanConnected){
+    fetch(getEspBase() + '/api/refresh').then(function(){
+      fetchState();
+      btn.textContent = 'Sync APIs';
+    }).catch(function(){ fetchCloudFallback(); btn.textContent = 'Sync APIs'; });
+  } else {
+    fetchCloudFallback();
+    btn.textContent = 'Sync APIs';
+  }
 }
 
-function selectAlert(idx) {
-const item = (window._activeFilteredAlerts || [])[idx];
-if (!item) return;
-document.getElementById('hazardReader').innerHTML = &lt;div style="font-weight:800; margin-bottom:4px;"&gt;${item.title} (${item.issued})&lt;/div&gt; &lt;div&gt;&lt;strong&gt;Affected Areas:&lt;/strong&gt; ${item.areas}</div>
-<div style="margin-top:4px;">${item.detail}&lt;/div&gt; &lt;div style="margin-top:6px; color:var(--accent);"&gt;&lt;strong&gt;Recommended Action:&lt;/strong&gt; ${item.actions}</div>
-`;
+function saveConfig(){
+  var espUrl = document.getElementById('cfgEspUrl').value.trim() || 'http://192.168.0.229';
+  localStorage.setItem('jl_esp_url', espUrl);
+  localStorage.setItem('jl_name', document.getElementById('cfgName').value);
+  localStorage.setItem('jl_lat',  document.getElementById('cfgLat').value);
+  localStorage.setItem('jl_lon',  document.getElementById('cfgLon').value);
+  localStorage.setItem('jl_elev', document.getElementById('cfgElev').value);
+
+  if(!lanConnected){
+    alert('Saved locally in browser! Connect to home Wi-Fi (JDFam_2.4G) to push hardware settings to ESP32 NVS.');
+    cfgLoaded = false;
+    fetchState();
+    return;
+  }
+
+  var body = new URLSearchParams();
+  body.append('name',  document.getElementById('cfgName').value);
+  body.append('lat',   document.getElementById('cfgLat').value);
+  body.append('lon',   document.getElementById('cfgLon').value);
+  body.append('elev',  document.getElementById('cfgElev').value);
+  body.append('toff',  document.getElementById('cfgTOff').value);
+  body.append('poff',  document.getElementById('cfgPOff').value);
+  body.append('ssid',  document.getElementById('cfgSsid').value);
+  body.append('pass',  document.getElementById('cfgPass').value);
+  body.append('wuen',  document.getElementById('cfgWuEn').checked ? '1' : '0');
+  body.append('wuid',  document.getElementById('cfgWuId').value);
+  body.append('wukey', document.getElementById('cfgWuKey').value);
+  body.append('owm',   document.getElementById('cfgOwm').value);
+  body.append('hook',  document.getElementById('cfgHook').value);
+
+  fetch(getEspBase() + '/api/saveconfig', {method:'POST', body:body})
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      alert(res.msg || 'Configuration Saved to ESP32!');
+      cfgLoaded = false;
+      fetchState();
+    }).catch(function(){ alert('Saved in browser; ESP32 unreachable.'); });
 }
 
-function renderAll(d) {
-applyThemeMode();
-document.getElementById('hdrStationName').textContent = d.stationName;
-document.getElementById('hdrClock').textContent =
-``${d.lat.toFixed(4)}°N,  {new Date().toLocaleTimeString()}`;
-document.getElementById('hdrTemp').textContent = fmtTemp(d.tempC);
-
-const modeBadge = document.getElementById('connModeBadge');
-modeBadge.textContent = STATE.connMode;
-modeBadge.className = STATE.connMode === 'LAN' ? 'badge b-ok' : 'badge b-warn';
-
-renderHazards(d);
-
-document.getElementById('syncedModelBadge').textContent =
-Synced Model: ${d.syncedModel} • ${d.sensorMatchPct.toFixed(1)}% Sensor Match ▸;
-document.getElementById('heroTemp').textContent = fmtTemp(d.tempC);
-document.getElementById('heroFeels').textContent =
-Feels Like ${fmtTemp(d.hiC)} • Dew Point ${fmtTemp(d.dewC)};
-document.getElementById('heroPlainSummary').textContent =
-Local sensor reads ${fmtTemp(d.tempC)} with ${d.humPct}% RH and ${d.windKmh} km/h ${degToDir(d.windDirDeg)} breeze in San Jose City; ${d.rainProb}% chance of rain in the next hour.`;
-
-document.getElementById('windArrowGroup').setAttribute('transform', rotate(${d.windDirDeg} 30 30)); document.getElementById('windMainTxt').textContent = {degToDir(d.windDirDeg)}; document.getElementById('windGustTxt').textContent =Gusts  {d.slpHpa.toFixed(1)} hPa; document.getElementById('rainHeroTxt').textContent = {d.rainMmH.toFixed(1)} mm/h; document.getElementById('cloudHeroTxt').textContent =Cloud Cover  {d.uvIndex}; document.getElementById('visHeroTxt').innerHTML =Vis  {d.humPct}%</strong> <span class="badge-src src-sensor">SENSOR</span>`;
-
-const sparkPts = (d.baroSpark || [1013, 1013.2, 1013.4]).map((v, i, arr) => {
-const x = arr.length === 1 ? 70 : (i / (arr.length - 1)) * 140;
-const y = 24 - ((v - 1005) / 15) * 18;
-return ${x.toFixed(1)},${Math.max(4, Math.min(26, y)).toFixed(1)};
-}).join(' ');
-document.getElementById('heroBaroSpark').setAttribute('points', sparkPts);
-
-const uvRatio = Math.max(0, Math.min(1, d.uvIndex / 11));
-const dashLen = 157;
-document.getElementById('uvArcFill').setAttribute('stroke-dasharray', ${(uvRatio * dashLen).toFixed(1)} ${dashLen});
-
-document.getElementById('hourlyStrip').innerHTML = (d.hourly || []).map(h => &lt;div class="hr-tile tabular"&gt; &lt;div style="font-size:0.72rem; font-weight:700;"&gt;${h.label}</div>
-<div style="font-size:0.95rem; font-weight:800; color:var(--c-temp); margin-top:3px;">${fmtTemp(h.tempC, false)}&lt;/div&gt; &lt;div class="hr-bar-track"&gt;&lt;div class="hr-bar-fill" style="height:${h.rainProb}%"></div></div>
-<div style="font-size:0.68rem; color:var(--c-rain); font-weight:700;">${h.rainProb}%&lt;/div&gt; &lt;div class="muted" style="font-size:0.68rem; margin-top:2px;"&gt;${degToDir(h.windDeg)} ${h.windKmh}&lt;/div&gt; &lt;/div&gt;).join('');
-
-const temps = (d.models14 || []).map(m => m.tempC);
-const minM = Math.min(...temps);
-const maxM = Math.max(...temps);
-const avgM = temps.reduce((a, b) => a + b, 0) / Math.max(1, temps.length);
-document.getElementById('spreadMin').textContent = fmtTemp(minM);
-document.getElementById('spreadAvg').textContent = fmtTemp(avgM);
-document.getElementById('spreadMax').textContent = fmtTemp(maxM);
-const span = Math.max(0.5, maxM - minM);
-const avgPct = Math.max(5, Math.min(95, ((avgM - minM) / span) * 100));
-document.getElementById('spreadRange').style.left = '8%';
-document.getElementById('spreadRange').style.right = '8%';
-document.getElementById('spreadAvgDot').style.left = ${avgPct}%; const tightCount = temps.filter(t =&gt; Math.abs(t - avgM) &lt;= 0.8).length; document.getElementById('consensusPctBadge').textContent = ``${Math.round((tightCount / Math.max(1, temps.length)) * 100)}% Consensus (${temps.length} Models)`;
-
-document.getElementById('sevenDayBody').innerHTML = (d.daily || []).map(day => &lt;tr class="tabular"&gt; &lt;td&gt;&lt;strong&gt;${day.day}</strong></td>
-<td> {fmtTemp(day.lowC, false)} /  {day.rainProb}%</td>
-</tr>
-`).join('');
-
-document.getElementById('sunTimesTxt').textContent = ${d.sunrise} / ${d.sunset};
-document.getElementById('solarNoonTxt').textContent = ${d.solarNoon} / ${d.goldenHour};
-document.getElementById('moonPhaseBadge').textContent = d.moonPhase;
-document.getElementById('moonMetaTxt').textContent = ${d.moonIllum}% • ${d.nextLunarEvent};
-
-const spreadC = d.tempC - d.dewC;
-const clarity = Math.max(0, Math.min(100, Math.round(
-(100 - d.cloudCoverPct) * 0.6 +
-Math.max(0, 100 - d.humPct) * 0.25 +
-Math.min(15, Math.max(0, spreadC * 3))
-)));
-document.getElementById('clarityScoreBadge').textContent = ${clarity} / 100; document.getElementById('clarityBigNum').textContent = ``${clarity}% Clear Sky;
-document.getElementById('clarityReasonTxt').textContent =
-clarity >= 70
-? 'Clear sky window with low cloud interference for stargazing.'
-: 'Cloud cover or elevated humidity reduces deep-sky contrast.';
-const condRisk = (spreadC <= 2.0 && d.humPct >= 85) ? 'High Dew/Lens Risk' : (spreadC <= 3.5 ? 'Moderate Risk' : 'Low Risk');
-document.getElementById('condensationRiskTxt').textContent = ${condRisk} (Spread ${spreadC.toFixed(1)}°C);
-
-document.getElementById('issPassTxt').textContent = d.issPass;
-document.getElementById('issElevTxt').textContent = d.issGeom;
-
-document.getElementById('nvsRecoveredTxt').textContent = ${d.nvsRecovered10m} (10m) • ${d.nvsRecovered30m} (30m);
-document.getElementById('aiVaultTxt').textContent = SGD Step #${d.aiSteps} • Calibrated; document.getElementById('diagMode').textContent = ``${STATE.connMode} (${d.ipAddr}); document.getElementById('diagRssi').textContent = ``${d.wifiRssi} dBm • ${d.uptimeStr}; document.getElementById('diagHeap').textContent = ``${d.freeHeapKb} KB • ${d.resetReason}`;
+function testWuUpload(){
+  if(!lanConnected){ alert('ESP32 LAN connection required to trigger WU upload.'); return; }
+  fetch(getEspBase() + '/api/testwu').then(function(){
+    fetchState();
+    alert('Upload triggered. Check Weather Underground Status line.');
+  });
 }
 
-function openModelBreakdown() {
-const rows = STATE.telemetry ? STATE.telemetry.models14 : [];
-document.getElementById('modal14Body').innerHTML = rows.map(m => &lt;tr class="tabular"&gt; &lt;td&gt;&lt;strong&gt;${m.name}</strong></td>
-<td> {m.rainProb}%</td>
-<td> {m.match.toFixed(1)}%</td>
-</tr>
-`).join('');
-document.getElementById('modelBackdrop').classList.add('ope
+function exportData(fmt){
+  if(lanConnected){
+    window.location = getEspBase() + (fmt === 'csv' ? '/api/export.csv' : '/api/export.json');
+  } else {
+    alert('Connect to home Wi-Fi (JDFam_2.4G) to download local BME280 NVS history logs.');
+  }
+}
+
+function triggerNvsSave(){
+  if(!lanConnected){ alert('Connect to home Wi-Fi (JDFam_2.4G) to trigger ESP32 NVS save.'); return; }
+  fetch(getEspBase() + '/api/savenvs').then(function(){ alert('NVS Snapshot Saved'); });
+}
+
+function renderHourly(){
+  var hHtml = '';
+  for(var i = 0; i < hourlyCache.length; i += stepStride){
+    var h = hourlyCache[i];
+    hHtml += '<div class="h-slot"><b>'+h.t+'</b><div style="font-weight:800;margin:2px 0">'+fmtT(h.temp)+'</div><div>💧'+h.rp+'%</div><div>'+h.rmm.toFixed(1)+'mm</div></div>';
+  }
+  document.getElementById('hourlyScroll').innerHTML = hHtml || '<div style="font-size:.74rem;color:var(--mut)">Awaiting hourly model sync...</div>';
+}
+
+function fetchState(){
+  var ctrl = new AbortController();
+  var tid = setTimeout(function(){ ctrl.abort(); }, 3500);
+  fetch(getEspBase() + '/api/state', {signal: ctrl.signal})
+    .then(function(r){ clearTimeout(tid); return r.json(); })
+    .then(function(d){
+      lanConnected = true;
+      var mb = document.getElementById('modeBanner');
+      mb.style.display = 'none';
+      renderDashboard(d);
+      loadHistoryChart();
+    })
+    .catch(function(){
+      clearTimeout(tid);
+      lanConnected = false;
+      fetchCloudFallback();
+    });
+}
+
+// Cloud Fallback Engine when away from home Wi-Fi or if Chrome blocks HTTP Mixed Content
+function fetchCloudFallback(){
+  var lat = parseFloat(localStorage.getItem('jl_lat')) || 15.8003302;
+  var lon = parseFloat(localStorage.getItem('jl_lon')) || 121.0030307;
+  var elev = parseFloat(localStorage.getItem('jl_elev')) || 113.0;
+  var stName = localStorage.getItem('jl_name') || 'JUAN LOOKOUT PHILIPPINES';
+
+  var mb = document.getElementById('modeBanner');
+  mb.style.display = 'block';
+  mb.innerHTML = 'CLOUD FALLBACK MODE — ESP32 ('+getEspBase()+') not reached on LAN. Showing live multi-model, radar & PH hazard telemetry. (If on home Wi-Fi, allow Insecure Content in Chrome Site Settings.)';
+
+  var coreUrl = 'https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&elevation='+elev+
+    '&current=temperature_2m,relative_humidity_2m,dew_point_2m,pressure_msl,cloud_cover,precipitation,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index,visibility'+
+    '&hourly=temperature_2m,precipitation_probability,precipitation,cloud_cover,wind_speed_10m,wind_gusts_10m,weather_code,cape'+
+    '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,uv_index_max'+
+    '&forecast_hours=24&forecast_days=14&timezone=Asia%2FManila';
+
+  var modUrl = 'https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&elevation='+elev+
+    '&current=temperature_2m,pressure_msl,precipitation,wind_speed_10m'+
+    '&models=ecmwf_aifs025,ncep_aigfs025,ecmwf_ifs,ecmwf_ifs025,gfs_seamless,icon_seamless,jma_seamless,ukmo_seamless,gem_seamless,meteofrance_seamless,cma_grapes_global&timezone=Asia%2FManila';
+
+  var wnUrl = 'https://ensemble-api.open-meteo.com/v1/ensemble?latitude='+lat+'&longitude='+lon+
+    '&hourly=temperature_2m,pressure_msl,precipitation,wind_speed_10m&models=google_weathernext3_ensemble_mean&forecast_hours=3&timezone=Asia%2FManila';
+
+  var gdacsUrl = 'https://www.gdacs.org/gdacsapi/api/events/geteventlist/SEARCH?country=Philippines&alertlevel=Green;Orange;Red&limit=4';
+  var usgsUrl  = 'https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&latitude='+lat+'&longitude='+lon+'&maxradiuskm=500&minmagnitude=3.5&orderby=time&limit=3';
+
+  Promise.all([
+    fetch(coreUrl).then(function(r){return r.json();}),
+    fetch(modUrl).then(function(r){return r.json();}).catch(function(){return {};}),
+    fetch(wnUrl).then(function(r){return r.json();}).catch(function(){return {};}),
+    fetch(gdacsUrl).then(function(r){return r.json();}).catch(function(){return {features:[]};}),
+    fetch(usgsUrl).then(function(r){return r.json();}).catch(function(){return {features:[]};})
+  ]).then(function(res){
+    var c = res[0], mData = res[1], wnData = res[2], gData = res[3], uData = res[4];
+    var cur = c.current || {};
+    var now = new Date();
+    var ts = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+
+    var modelDefs = [
+      {name:'ECMWF AIFS 0.25° (AI)', slug:'ecmwf_aifs025', cat:'AI', wt:1.18},
+      {name:'NOAA AIGFS 0.25° (AI)', slug:'ncep_aigfs025', cat:'AI', wt:1.15},
+      {name:'ECMWF IFS 9km HRES',    slug:'ecmwf_ifs',     cat:'NWP', wt:1.16},
+      {name:'ECMWF IFS 0.25°',       slug:'ecmwf_ifs025',  cat:'NWP', wt:1.12},
+      {name:'NOAA GFS Seamless',     slug:'gfs_seamless',  cat:'NWP', wt:1.00},
+      {name:'DWD ICON Seamless',     slug:'icon_seamless', cat:'NWP', wt:1.00},
+      {name:'JMA Seamless',          slug:'jma_seamless',  cat:'NWP', wt:1.05},
+      {name:'UKMO Global',           slug:'ukmo_seamless', cat:'NWP', wt:1.00},
+      {name:'ECCC GEM Global',       slug:'gem_seamless',  cat:'NWP', wt:0.95},
+      {name:'Meteo-France ARPEGE',   slug:'meteofrance_seamless', cat:'NWP', wt:0.95},
+      {name:'CMA GRAPES Global',     slug:'cma_grapes_global', cat:'NWP', wt:0.92}
+    ];
+
+    var modelsOut = [];
+    var tMin = 99, tMax = -99, tSum = 0, act = 0;
+    var mCur = mData.current || {};
+    modelDefs.forEach(function(md){
+      var tv = mCur['temperature_2m_' + md.slug];
+      if(tv !== undefined && tv !== null){
+        if(tv < tMin) tMin = tv;
+        if(tv > tMax) tMax = tv;
+        tSum += tv; act++;
+        modelsOut.push({
+          name: md.name, cat: md.cat, avail: true, t: tv,
+          p: mCur['pressure_msl_' + md.slug] || cur.pressure_msl || 1010,
+          r: mCur['precipitation_' + md.slug] || 0,
+          w: mCur['wind_speed_10m_' + md.slug] || cur.wind_speed_10m || 0,
+          wt: md.wt, mae: 0.45
+        });
+      }
+    });
+
+    if(wnData.hourly && wnData.hourly.temperature_2m && wnData.hourly.temperature_2m.length > 0){
+      var wnt = wnData.hourly.temperature_2m[0];
+      if(wnt < tMin) tMin = wnt;
+      if(wnt > tMax) tMax = wnt;
+      tSum += wnt; act++;
+      modelsOut.push({
+        name: 'Google WeatherNext 3', cat: 'AI', avail: true, t: wnt,
+        p: (wnData.hourly.pressure_msl && wnData.hourly.pressure_msl[0]) || cur.pressure_msl || 1010,
+        r: (wnData.hourly.precipitation && wnData.hourly.precipitation[0]) || 0,
+        w: (wnData.hourly.wind_speed_10m && wnData.hourly.wind_speed_10m[0]) || cur.wind_speed_10m || 0,
+        wt: 1.20, mae: 0.40
+      });
+    }
+    modelsOut.push({name:'ATMO AI (PAGASA 2km)', cat:'AI*', avail:false, t:0, p:0, r:0, w:0, wt:1.15, mae:0});
+
+    var advs = [];
+    (gData.features || []).forEach(function(f){
+      var p = f.properties || {};
+      if(p.name){
+        advs.push({
+          agency: 'GDACS / PH MONITOR', title: p.name, pubDate: p.todate || 'Active',
+          hazard: p.eventtype || 'Multi-Hazard', status: (p.alertlevel || 'Green') + ' ALERT',
+          area: 'Philippine Area of Responsibility',
+          summary: p.description || 'Active Philippine hazard monitored by GDACS / PAGASA / PHIVOLCS.',
+          url: (p.url && p.url.report) || 'https://www.gdacs.org/'
+        });
+      }
+    });
+    (uData.features || []).forEach(function(f){
+      var p = f.properties || {};
+      advs.push({
+        agency: 'USGS / PHIVOLCS', title: 'M' + (p.mag||0).toFixed(1) + ' Earthquake — ' + (p.place||'Philippines'),
+        pubDate: p.time ? new Date(p.time).toLocaleString() : 'Recent',
+        hazard: 'Seismic / Tectonic', status: 'REAL-TIME SEISMIC', area: p.place || 'Philippines',
+        summary: 'Real-time seismic event within 500 km of station.', url: p.url || 'https://earthquake.phivolcs.dost.gov.ph'
+      });
+    });
+
+    var hArr = [];
+    if(c.hourly && c.hourly.time){
+      for(var i=0; i<c.hourly.time.length; i++){
+        hArr.push({
+          t: c.hourly.time[i].slice(11,16),
+          temp: c.hourly.temperature_2m[i],
+          rp: c.hourly.precipitation_probability[i] || 0,
+          rmm: c.hourly.precipitation[i] || 0
+        });
+      }
+    }
+
+    var dArr = [];
+    if(c.daily && c.daily.time){
+      for(var d=0; d<c.daily.time.length; d++){
+        dArr.push({
+          d: c.daily.time[d],
+          min: c.daily.temperature_2m_min[d],
+          max: c.daily.temperature_2m_max[d],
+          rp: c.daily.precipitation_probability_max[d] || 0,
+          rmm: c.daily.precipitation_sum[d] || 0,
+          uv: c.daily.uv_index_max[d] || 0
+        });
+      }
+    }
+
+    var tempC = cur.temperature_2m || 28.0;
+    var rh = cur.relative_humidity_2m || 75.0;
+    var hiC = (tempC >= 27 && rh >= 40) ? (tempC + 0.33 * (rh/100*6.105*Math.exp(17.27*tempC/(237.7+tempC))) - 4.0) : tempC;
+    var hiCat = hiC >= 52 ? 4 : hiC >= 42 ? 3 : hiC >= 33 ? 2 : hiC >= 27 ? 1 : 0;
+    var rpNow = (c.hourly && c.hourly.precipitation_probability && c.hourly.precipitation_probability[0]) || 15;
+    var capeNow = (c.hourly && c.hourly.cape && c.hourly.cape[0]) || 0;
+
+    var synthState = {
+      cfg: {name: stName, lat: lat, lon: lon, elev: elev, toff: 0, poff: 0, ssid: 'JDFam_2.4G', wuen: false, wuid: '', owm: '', hook: ''},
+      sys: {fw: '3.0.0-GH-CLOUD', timeStr: ts, lastNtpStr: ts, staConnected: true, rssi: -55, staIp: 'Cloud Relay', apIp: 'GitHub Pages', uptimeSec: 0, freeHeap: 0, minHeap: 0, reboots: 0, histCount: 0, mTMin: tempC, mTMax: tempC, mPMin: cur.pressure_msl||1010, mPMax: cur.pressure_msl||1010},
+      sensor: {online: false, addr: '--', polls: 0, errors: 0, rawTemp: tempC, filtTemp: tempC, dayMin: dArr[0]?dArr[0].min:tempC, dayMax: dArr[0]?dArr[0].max:tempC, rawHum: rh, filtHum: rh, rawPress: cur.pressure_msl||1010, filtPress: cur.pressure_msl||1010, slp: cur.pressure_msl||1010, diurnalAnom: 0, dewPoint: cur.dew_point_2m||22, heatIndex: hiC, hiCat: hiCat, slope1h: 0, slope3h: 0, quality: 'CLOUD FALLBACK', qualityReason: 'ESP32 offline/remote; using multi-model telemetry', condRisk: false, moldRisk: rh>=75},
+      online: {valid: true, stale: false, lastFetchStr: ts, apiStatus: 'Cloud OK', wuStatus: 'LAN Only', temp: tempC, hum: rh, slp: cur.pressure_msl||1010, cloudPct: cur.cloud_cover||40, rainProb: rpNow, rainMmHr: cur.precipitation||0, rainDailyMm: dArr[0]?dArr[0].rmm:0, windKmh: cur.wind_speed_10m||0, gustKmh: cur.wind_gusts_10m||0, windDir: cur.wind_direction_10m||0, uv: cur.uv_index||0, visKm: (cur.visibility||10000)/1000, activeModels: act, agreementPct: act>1?Math.max(20,Math.round(100-(tMax-tMin)*15)):85, spreadMin: act?tMin:tempC, spreadAvg: act?(tSum/act):tempC, spreadMax: act?tMax:tempC, closestModel: modelsOut[0]?modelsOut[0].name:'ECMWF AIFS'},
+      nowcast: {
+        confidence: 'CLOUD ENSEMBLE',
+        description: (tempC>=33?'Hot conditions':tempC>=27?'Warm tropical conditions':'Mild conditions') + (rh>=75?' with high humidity':' with moderate humidity') + (rpNow>=60?' and elevated rain potential.':' and relatively stable skies.'),
+        rainLikelihoodPct: rpNow,
+        rainOnsetEst: rpNow>=65?'Possible within 1-3 hours':'Low short-term onset risk',
+        thunderstormPotential: capeNow>=1500?'HIGH (Convective Instability)':capeNow>=700?'MODERATE':'LOW',
+        timeline: hArr.slice(0,7).map(function(h, idx){ return {slot: idx===0?'NOW':'+'+idx+'h', origin:'MODEL EST.', tempC:h.temp, rainProb:h.rp, rainMm:h.rmm, windKmh:cur.wind_speed_10m||0}; })
+      },
+      forecast: {zambretti: 'Cloud Ensemble Mode (Connect LAN for Barometer Z-score)'},
+      tropical: {season: 'Philippine Tropical Climatology (15.8°N): Monitor PAGASA PANaHON for Amihan/Habagat & ITCZ shifts.', suppressedCount: 0, lastSuppressed: 'LAN Only'},
+      ewc: {level: advs.length>0?'DEVELOPING':'STABLE', gov: advs[0]?advs[0].title:'No active Red/Orange bulletins in live feed.', model: rpNow>=60?'Elevated precipitation signal in ensemble.':'No severe model convective warnings.', local: 'Connect on home Wi-Fi for live BME280 barometric triggers.'},
+      advisoriesStatus: 'LIVE CLOUD SYNCED @ ' + ts,
+      advisories: advs,
+      models: modelsOut,
+      hourly: hArr,
+      daily: dArr,
+      astro: computeClientAstro(lat, lon, cur.cloud_cover||40)
+    };
+    renderDashboard(synthState);
+  });
+}
+
+function computeClientAstro(lat, lon, cloudPct){
+  var now = new Date();
+  var start = new Date(now.getFullYear(), 0, 0);
+  var doy = Math.floor((now - start) / 86400000);
+  var sunProg = Math.max(0, Math.min(1, ((now.getHours()*60 + now.getMinutes()) - 355) / (1055 - 355)));
+  var phaseFrac = ((now.getTime()/1000 - 947182440) / 86400 / 29.53058867) % 1;
+  var illum = Math.round((1 - Math.cos(2 * Math.PI * phaseFrac)) * 50);
+  var clarity = Math.max(5, Math.min(100, Math.round(100 - cloudPct*0.7 - illum*0.2)));
+  return {
+    sunrise:'05:58 AM', sunset:'05:32 PM', solarNoon:'11:45 AM', daylightHrs:11.6, sunProgress:sunProg,
+    goldenHour:'04:47 PM', blueHour:'05:52 PM', moonIllum:illum, moonPhase: illum>90?'Full Moon':illum<10?'New Moon':'Quarter / Gibbous',
+    moonriseEst:'06:15 PM', moonsetEst:'06:10 AM', highTide1:'12:30 PM', lowTide1:'06:45 PM',
+    skyClarity:clarity, issPass:'06:18 PM', issAzimuth:'SW -> NE (Max El ~54°)',
+    planets:'Jupiter, Saturn & Venus (Twilight)',
+    celestial:(doy>300||doy<40)?'Geminids/Quadrantids approaching peak; Orion & Jupiter prominent.':'Seasonal deep-sky & Milky Way core visible.'
+  };
+}
+
+function renderDashboard(d){
+  lastStateCache = d;
+  document.getElementById('hdrStation').textContent = d.cfg.name;
+  document.getElementById('hdrCoords').textContent  = d.cfg.lat.toFixed(6)+'° N, '+d.cfg.lon.toFixed(6)+'° E • Elev '+d.cfg.elev+'m • Asia/Manila (GMT+8)';
+  document.getElementById('wuStat').textContent     = d.online.wuStatus;
+
+  initRadarMap(d.cfg.lat, d.cfg.lon);
+  document.getElementById('radLinks').innerHTML =
+    '<a class="link-btn" target="_blank" rel="noopener" href="https://www.panahon.gov.ph/">PAGASA PANaHON Live ↗</a>'+
+    '<a class="link-btn" target="_blank" rel="noopener" href="https://www.pagasa.dost.gov.ph/radar">PAGASA Radar ↗</a>'+
+    '<a class="link-btn" target="_blank" rel="noopener" href="https://www.data.jma.go.jp/mscweb/data/himawari/sat_img.php?area=se2">Himawari Sat ↗</a>'+
+    '<a class="link-btn" target="_blank" rel="noopener" href="https://www.windy.com/?'+d.cfg.lat+','+d.cfg.lon+',10">Windy ↗</a>'+
+    '<a class="link-btn" target="_blank" rel="noopener" href="https://hazardhunter.georisk.gov.ph/">PHIVOLCS ↗</a>';
+
+  if(!cfgLoaded){
+    document.getElementById('cfgEspUrl').value = getEspBase();
+    document.getElementById('cfgName').value   = d.cfg.name;
+    document.getElementById('cfgLat').value    = d.cfg.lat;
+    document.getElementById('cfgLon').value    = d.cfg.lon;
+    document.getElementById('cfgElev').value   = d.cfg.elev;
+    document.getElementById('cfgTOff').value   = d.cfg.toff;
+    document.getElementById('cfgPOff').value   = d.cfg.poff;
+    document.getElementById('cfgSsid').value   = d.cfg.ssid;
+    document.getElementById('cfgWuEn').checked = d.cfg.wuen;
+    document.getElementById('cfgWuId').value   = d.cfg.wuid;
+    document.getElementById('cfgOwm').value    = d.cfg.owm;
+    document.getElementById('cfgHook').value   = d.cfg.hook;
+    cfgLoaded = true;
+  }
+
+  document.getElementById('bClock').textContent = d.sys.timeStr;
+  var bNet = document.getElementById('bNet');
+  if(lanConnected){
+    bNet.textContent = 'ESP32 LAN LINKED ('+d.sys.rssi+' dBm)';
+    bNet.className = 'badge b-ok';
+  } else {
+    bNet.textContent = 'CLOUD FALLBACK (AWAY)';
+    bNet.className = 'badge b-warn';
+  }
+
+  var bSen = document.getElementById('bSensor');
+  bSen.textContent = d.sensor.online ? ('BME280 0x'+d.sensor.addr+' • '+d.sensor.quality) : 'CLOUD TELEMETRY';
+  bSen.className = 'badge ' + (d.sensor.online ? 'b-ok' : 'b-warn');
+
+  var bAl = document.getElementById('bAlert');
+  bAl.textContent = d.ewc.level;
+  bAl.className = 'badge ' + (d.ewc.level==='STABLE'?'b-ok':(d.ewc.level==='DEVELOPING'?'b-warn':'b-bad'));
+
+  document.getElementById('bSync').textContent =
+    'Sync: '+d.online.lastFetchStr+' ('+d.online.apiStatus+') | '+d.forecast.zambretti;
+
+  document.getElementById('tagTempSrc').textContent = d.sensor.online ? 'LOCAL SENSOR' : 'MODEL EST.';
+  document.getElementById('ncConf').textContent = d.nowcast.confidence;
+  document.getElementById('ncDesc').textContent = d.nowcast.description;
+  document.getElementById('ncTemp').textContent = d.sensor.online ? fmtT(d.sensor.filtTemp) : (fmtT(d.online.temp)+' (Model)');
+  document.getElementById('ncHI').textContent   = fmtT(d.sensor.heatIndex)+' ('+HI_NAMES[d.sensor.hiCat]+')';
+  document.getElementById('ncHumDew').textContent = d.sensor.filtHum.toFixed(1)+'% / '+fmtT(d.sensor.dewPoint);
+  document.getElementById('ncPress').textContent  = d.sensor.slp.toFixed(1)+' hPa ('+(d.sensor.diurnalAnom>=0?'+':'')+d.sensor.diurnalAnom.toFixed(2)+')';
+  document.getElementById('ncRainProb').textContent = d.nowcast.rainLikelihoodPct+'% — '+d.nowcast.rainOnsetEst;
+  document.getElementById('ncTstorm').textContent = d.nowcast.thunderstormPotential;
+  document.getElementById('ncWind').textContent   = d.online.windKmh.toFixed(1)+' km/h (Gust '+d.online.gustKmh.toFixed(1)+')';
+  document.getElementById('ncSky').textContent    = 'Cloud '+d.online.cloudPct+'% | UV '+d.online.uv.toFixed(1)+' | Vis '+d.online.visKm.toFixed(1)+'km';
+
+  var tlHtml = '';
+  (d.nowcast.timeline||[]).forEach(function(s){
+    tlHtml += '<div class="h-slot"><b>'+s.slot+'</b><div style="font-size:.59rem;color:var(--acc)">'+s.origin+'</div><div style="font-size:.92rem;font-weight:800;margin:3px 0">'+fmtT(s.tempC)+'</div><div>💧'+s.rainProb+'% ('+s.rainMm+'mm)</div><div>💨'+s.windKmh+'km/h</div></div>';
+  });
+  document.getElementById('ncTimeline').innerHTML = tlHtml;
+
+  document.getElementById('cmpClosest').textContent = 'Closest Matching Model: ' + d.online.closestModel;
+  if(d.sensor.online && d.online.valid){
+    var dt = d.sensor.filtTemp - d.online.temp;
+    var dh = d.sensor.filtHum - d.online.hum;
+    var dp = d.sensor.slp - d.online.slp;
+    document.getElementById('cmpBody').innerHTML =
+      '<tr><td>Temperature</td><td>'+fmtT(d.sensor.filtTemp)+'</td><td>'+fmtT(d.online.temp)+'</td><td>'+(dt>=0?'+':'')+dt.toFixed(1)+'°C</td></tr>'+
+      '<tr><td>Humidity</td><td>'+d.sensor.filtHum.toFixed(1)+' %</td><td>'+d.online.hum.toFixed(1)+' %</td><td>'+(dh>=0?'+':'')+dh.toFixed(1)+' %</td></tr>'+
+      '<tr><td>Sea-Level Press.</td><td>'+d.sensor.slp.toFixed(1)+' hPa</td><td>'+d.online.slp.toFixed(1)+' hPa</td><td>'+(dp>=0?'+':'')+dp.toFixed(1)+' hPa</td></tr>';
+  } else {
+    document.getElementById('cmpBody').innerHTML = '<tr><td colspan="4">Connect on home Wi-Fi (JDFam_2.4G) for live BME280 vs. Model delta</td></tr>';
+  }
+
+  document.getElementById('ewcGov').textContent = d.ewc.gov;
+  document.getElementById('ewcMod').textContent = d.ewc.model;
+  document.getElementById('ewcLoc').textContent = d.ewc.local;
+
+  var hum = Math.max(0, Math.min(100, d.sensor.filtHum));
+  document.getElementById('gHumArc').setAttribute('stroke-dashoffset', 157 - (157 * hum / 100));
+  document.getElementById('gHumTxt').textContent = hum.toFixed(0)+'%';
+  document.getElementById('cTempRF').textContent = fmtT(d.sensor.rawTemp)+' / '+fmtT(d.sensor.filtTemp);
+  document.getElementById('cTempMM').textContent = fmtT(d.sensor.dayMin)+' / '+fmtT(d.sensor.dayMax);
+  document.getElementById('cPressRaw').textContent = d.sensor.rawPress.toFixed(2)+' hPa';
+  document.getElementById('cSlope').textContent = (d.sensor.slope1h>=0?'+':'')+d.sensor.slope1h.toFixed(2)+' / '+(d.sensor.slope3h>=0?'+':'')+d.sensor.slope3h.toFixed(2);
+  document.getElementById('hiBar').style.width = Math.min(100, Math.max(5, (d.sensor.heatIndex - 20) * 2.8)) + '%';
+  document.getElementById('cIntel').textContent = 'Quality: '+d.sensor.qualityReason+' | Condensation: '+(d.sensor.condRisk?'YES':'No')+' | Mold: '+(d.sensor.moldRisk?'YES':'No');
+
+  document.getElementById('windArrow').setAttribute('transform', 'rotate('+d.online.windDir+' 50 50)');
+  document.getElementById('wrWind').textContent  = d.online.windDir+'° / '+d.online.windKmh.toFixed(1)+' km/h';
+  document.getElementById('wrGust').textContent  = d.online.gustKmh.toFixed(1)+' km/h';
+  document.getElementById('wrRate').textContent  = d.online.rainMmHr.toFixed(1)+' mm/h ('+d.online.rainProb+'% prob)';
+  document.getElementById('wrDaily').textContent = d.online.rainDailyMm.toFixed(1)+' / 10.0 mm';
+
+  document.getElementById('advStatus').textContent = d.advisoriesStatus;
+  var advHtml = '';
+  if(!d.advisories || d.advisories.length === 0){
+    advHtml = '<div style="font-size:.75rem;color:var(--mut)">No active Red/Orange bulletins in GDACS/USGS/Local feeds. Tap PAGASA PANaHON Live above for municipal rainfall warnings.</div>';
+  } else {
+    d.advisories.forEach(function(a,idx){
+      advHtml += '<div class="adv-item" onclick="tog(\'advD'+idx+'\')">'+
+        '<div style="display:flex;justify-content:space-between;font-size:.69rem;color:var(--warn)"><b>'+a.agency+' • '+a.hazard+'</b><span>'+a.pubDate+'</span></div>'+
+        '<div style="font-weight:700;font-size:.81rem;margin-top:2px">'+a.title+'</div>'+
+        '<div id="advD'+idx+'" class="hidden" style="margin-top:6px;font-size:.74rem;color:var(--txt)">'+
+          '<div><b>Area:</b> '+a.area+' | <b>Status:</b> '+a.status+'</div>'+
+          '<p style="margin:4px 0">'+a.summary+'</p>'+
+          '<a href="'+a.url+'" target="_blank" rel="noopener" style="color:var(--acc)">Open Official Bulletin ↗</a>'+
+        '</div></div>';
+    });
+  }
+  document.getElementById('advList').innerHTML = advHtml;
+
+  document.getElementById('modSummary').textContent =
+    'Consensus: '+d.online.activeModels+'/15 Active • Agreement: '+d.online.agreementPct+'% • Min '+fmtT(d.online.spreadMin)+' / Avg '+fmtT(d.online.spreadAvg)+' / Max '+fmtT(d.online.spreadMax);
+  var sp = d.online.spreadMax - d.online.spreadMin;
+  var pctPos = (sp > 0.05) ? ((d.online.spreadAvg - d.online.spreadMin) / sp * 100) : 50;
+  document.getElementById('consDot').style.left = Math.max(8, Math.min(92, pctPos)) + '%';
+
+  var mHtml = '';
+  (d.models||[]).forEach(function(m){
+    if(m.avail){
+      mHtml += '<tr><td><b>'+m.name+'</b></td><td>'+m.cat+'</td><td>'+fmtT(m.t)+'</td><td>'+m.p.toFixed(1)+'</td><td>'+m.r.toFixed(1)+'mm</td><td>'+m.w.toFixed(0)+'km/h</td><td>'+m.wt.toFixed(2)+' / '+m.mae.toFixed(2)+'°</td></tr>';
+    } else if(m.cat === 'AI*'){
+      mHtml += '<tr style="opacity:.7"><td><b>'+m.name+'</b></td><td>AI Ref</td><td colspan="4">View Live on PAGASA PANaHON Map Above</td><td>Wt '+m.wt.toFixed(2)+'</td></tr>';
+    }
+  });
+  document.getElementById('modBody').innerHTML = mHtml || '<tr><td colspan="7">Awaiting model sync</td></tr>';
+
+  hourlyCache = d.hourly || [];
+  renderHourly();
+
+  var dHtml = '';
+  (d.daily||[]).forEach(function(dy){
+    dHtml += '<tr><td>'+dy.d+'</td><td>'+fmtT(dy.min)+' / '+fmtT(dy.max)+'</td><td>'+dy.rp+'%</td><td>'+dy.rmm.toFixed(1)+' mm</td><td>'+dy.uv.toFixed(1)+'</td></tr>';
+  });
+  document.getElementById('dailyBody').innerHTML = dHtml || '<tr><td colspan="5">Awaiting 14-day model sync...</td></tr>';
+
+  var as = d.astro;
+  var ang = Math.PI * (1.0 - (as.sunProgress || 0.5));
+  var sx = 120 + 95 * Math.cos(ang);
+  var sy = 62 - 52 * Math.sin(ang);
+  document.getElementById('sunArcDot').setAttribute('cx', sx.toFixed(1));
+  document.getElementById('sunArcDot').setAttribute('cy', sy.toFixed(1));
+
+  document.getElementById('astroGrid').innerHTML =
+    '<div class="kv"><div class="kv-l">Sunrise / Sunset</div><div class="kv-v">'+as.sunrise+' / '+as.sunset+'</div></div>'+
+    '<div class="kv"><div class="kv-l">Solar Noon / Daylight</div><div class="kv-v">'+as.solarNoon+' ('+as.daylightHrs+'h)</div></div>'+
+    '<div class="kv"><div class="kv-l">Golden / Blue Hour</div><div class="kv-v">'+as.goldenHour+' / '+as.blueHour+'</div></div>'+
+    '<div class="kv"><div class="kv-l">Moon Phase ('+as.moonIllum+'%)</div><div class="kv-v">'+as.moonPhase+'</div></div>'+
+    '<div class="kv"><div class="kv-l">Moonrise / Moonset (Est.)</div><div class="kv-v">'+as.moonriseEst+' / '+as.moonsetEst+'</div></div>'+
+    '<div class="kv"><div class="kv-l">Tides (High / Low Est.)</div><div class="kv-v">'+as.highTide1+' / '+as.lowTide1+'</div></div>';
+
+  document.getElementById('issGrid').innerHTML =
+    '<div class="kv"><div class="kv-l">Stargazing Sky Clarity</div><div class="kv-v">'+as.skyClarity+'% Clear</div></div>'+
+    '<div class="kv"><div class="kv-l">Next Visible ISS Pass</div><div class="kv-v">'+as.issPass+'</div></div>'+
+    '<div class="kv"><div class="kv-l">ISS Azimuth / Max El</div><div class="kv-v">'+as.issAzimuth+'</div></div>'+
+    '<div class="kv"><div class="kv-l">Visible Planets</div><div class="kv-v">'+as.planets+'</div></div>'+
+    '<div class="kv" style="grid-column:1/-1"><div class="kv-l">Meteor Shower & Deep-Sky Focus</div><div class="kv-v" style="font-size:.77rem">'+as.celestial+'</div></div>';
+
+  document.getElementById('tropContext').textContent = d.tropical.season;
+  document.getElementById('tropLog').textContent     = 'Suppressed False Diurnal Alerts: '+d.tropical.suppressedCount+' ('+d.tropical.lastSuppressed+')';
+
+  document.getElementById('diagText').textContent =
+    'Mode: '+(lanConnected?'ESP32 LAN Direct ('+getEspBase()+')':'GitHub Pages Cloud Fallback')+' | Firmware: '+d.sys.fw+'\n'+
+    'Uptime: '+d.sys.uptimeSec+'s | Reboots: '+d.sys.reboots+' | Free Heap: '+d.sys.freeHeap+' B\n'+
+    'BME280 Polls: '+d.sensor.polls+' | I2C Errors: '+d.sensor.errors+' | NVS History Pts: '+d.sys.histCount+'/288\n'+
+    'Monthly Extremes: Temp '+fmtT(d.sys.mTMin)+'–'+fmtT(d.sys.mTMax)+' | Press '+d.sys.mPMin.toFixed(1)+'–'+d.sys.mPMax.toFixed(1)+' hPa';
+}
+
+function loadHistoryChart(){
+  if(!lanConnected) return;
+  fetch(getEspBase() + '/api/history').then(function(r){ return r.json(); }).then(function(arr){
+    histData = arr;
+    var rng = document.getElementById('playRange');
+    if(histData.length > 0){
+      rng.max = histData.length - 1;
+      rng.value = histData.length - 1;
+      renderPlayIdx(rng.value);
+      drawLineChart('tempCanvas', histData.map(function(x){return x.ft;}), '#38bdf8');
+      drawLineChart('pressCanvas', histData.map(function(x){return x.slp;}), '#22c55e');
+    }
+  }).catch(function(){});
+}
+
+function renderPlayIdx(idx){
+  if(!histData[idx]) return;
+  var p = histData[idx];
+  document.getElementById('playReadout').textContent =
+    '['+p.ts+'] RawT: '+fmtT(p.rt)+' | FiltT: '+fmtT(p.ft)+' | RH: '+p.rh+'% | StnP: '+p.rp+' hPa | SLP: '+p.slp+' hPa | Dew: '+fmtT(p.dp);
+}
+
+function stepPlay(delta){
+  var rng = document.getElementById('playRange');
+  var v = parseInt(rng.value,10) + delta;
+  v = Math.max(0, Math.min(histData.length - 1, v));
+  rng.value = v;
+  renderPlayIdx(v);
+}
+
+function drawLineChart(canvasId, vals, color){
+  var c = document.getElementById(canvasId);
+  var ctx = c.getContext('2d');
+  ctx.clearRect(0,0,c.width,c.height);
+  if(vals.length < 2) return;
+  var minV = Math.min.apply(null, vals) - 0.3;
+  var maxV = Math.max.apply(null, vals) + 0.3;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  vals.forEach(function(v, i){
+    var x = (i / (vals.length - 1)) * (c.width - 20) + 10;
+    var y = c.height - 12 - ((v - minV) / (maxV - minV || 1)) * (c.height - 24);
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+}
+
+fetchState();
+setRefreshRate();
+</script>
+</body>
+</html>
